@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KSleep — Secure Checkout</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #07070f;
+  --deep: #0e0e1a;
+  --card: #12121e;
+  --gold: #c9a84c;
+  --gold2: #e8c96e;
+  --cream: #f5f0e8;
+  --muted: #6b6575;
+  --border: rgba(201,168,76,0.15);
+  --glass: rgba(255,255,255,0.03);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── CURSOR ── */
+#cursor { position:fixed; width:12px; height:12px; border-radius:50%; background:var(--gold); pointer-events:none; z-index:9999; transform:translate(-50%,-50%); mix-blend-mode:difference; }
+#cursor-ring { position:fixed; width:40px; height:40px; border-radius:50%; border:1px solid rgba(201,168,76,0.4); pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all 0.12s ease; }
+
+/* ── LOADER ── */
+#loader { position:fixed; inset:0; z-index:99999; background:var(--ink); display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.7s, visibility 0.7s; }
+#loader.done { opacity:0; visibility:hidden; }
+.loader-logo { font-family:'Cormorant Garamond',serif; font-size:36px; color:var(--gold); letter-spacing:6px; margin-bottom:36px; animation:pulse 1.5s ease-in-out infinite; }
+.loader-bar { width:180px; height:1px; background:rgba(201,168,76,0.18); }
+.loader-fill { height:100%; background:var(--gold); animation:fill 1.5s ease forwards; }
+@keyframes fill { from{width:0} to{width:100%} }
+@keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+/* ── PARTICLES ── */
+.particles { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.particle { position:absolute; width:1.5px; height:1.5px; border-radius:50%; background:var(--gold); opacity:0; animation:floatUp var(--d,8s) var(--delay,0s) infinite ease-in-out; }
+@keyframes floatUp { 0%{opacity:0;transform:translateY(100vh)} 10%{opacity:0.25} 90%{opacity:0.06} 100%{opacity:0;transform:translateY(-10vh) translateX(var(--dx,20px))} }
+
+/* ── HEADER ── */
+header {
+  position: fixed; top:0; left:0; right:0; z-index:1000;
+  padding: 20px 6%;
+  display: flex; justify-content:space-between; align-items:center;
+  background: rgba(7,7,15,0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-family:'Cormorant Garamond',serif; font-size:24px; letter-spacing:4px; color:var(--gold); text-transform:uppercase; }
+.back-btn { display:flex; align-items:center; gap:8px; background:none; border:none; color:var(--muted); font-size:11px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; font-family:'DM Sans',sans-serif; transition:color 0.3s; }
+.back-btn:hover { color:var(--gold); }
+.back-arrow { transition:transform 0.3s; }
+.back-btn:hover .back-arrow { transform:translateX(-4px); }
+
+/* ── SECURE BADGE ── */
+.secure-badge {
+  display:flex; align-items:center; gap:6px;
+  font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted);
+}
+.secure-badge::before { content:'🔒'; font-size:12px; }
+
+/* ── LAYOUT ── */
+.page { max-width:1100px; margin:0 auto; padding:110px 6% 80px; display:grid; grid-template-columns:1.4fr 1fr; gap:32px; min-height:100vh; align-items:start; }
+
+/* ── SECTION CARD ── */
+.section-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius:4px;
+  padding: 36px 36px;
+  position:relative;
+  z-index:1;
+}
+.section-card::before {
+  content:''; position:absolute; top:0; left:36px; right:36px; height:1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+}
+
+.card-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:26px; font-weight:400; color:var(--cream);
+  margin-bottom:28px; display:flex; align-items:center; gap:14px;
+}
+.card-title span { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); font-family:'DM Sans',sans-serif; }
+
+/* ── FORM ── */
+.form-grid { display:grid; gap:18px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+
+.field { display:flex; flex-direction:column; gap:6px; }
+.field label {
+  font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:var(--gold); opacity:0.8;
+}
+.field input,
+.field textarea,
+.field select {
+  padding: 13px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius:2px;
+  color: var(--cream);
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  outline:none;
+  transition: border-color 0.3s, background 0.3s;
+  width:100%;
+}
+.field input:focus,
+.field textarea:focus { border-color:rgba(201,168,76,0.5); background:rgba(201,168,76,0.03); }
+.field input::placeholder,
+.field textarea::placeholder { color:var(--muted); }
+.field textarea { resize:vertical; min-height:80px; }
+
+/* ── SUBMIT BUTTON ── */
+.btn-submit {
+  width:100%; padding:16px 32px; margin-top:8px;
+  background:var(--gold); color:var(--ink);
+  border:none; border-radius:2px;
+  font-family:'DM Sans',sans-serif; font-size:12px;
+  letter-spacing:3px; text-transform:uppercase; font-weight:500;
+  cursor:pointer; position:relative; overflow:hidden;
+  transition:background 0.3s, transform 0.2s;
+  clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+}
+.btn-submit::after { content:''; position:absolute; inset:0; background:rgba(255,255,255,0.18); transform:translateX(-100%); transition:transform 0.35s; }
+.btn-submit:hover::after { transform:translateX(0); }
+.btn-submit:hover { background:var(--gold2); transform:translateY(-2px); }
+
+/* ── ORDER SUMMARY ── */
+.product-preview {
+  display:flex; gap:16px; align-items:center;
+  padding:20px; background:rgba(255,255,255,0.02);
+  border:1px solid var(--border); border-radius:2px; margin-bottom:24px;
+}
+.product-preview img {
+  width:80px; height:80px; object-fit:cover; border-radius:2px;
+  border:1px solid var(--border); flex-shrink:0;
+}
+.product-preview-info {}
+.preview-tag { font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:4px; }
+.preview-name { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:400; color:var(--cream); line-height:1.2; margin-bottom:4px; }
+.preview-price { font-family:'Cormorant Garamond',serif; font-size:22px; color:var(--gold); }
+
+/* ── PRICE BREAKDOWN ── */
+.price-rows { margin-bottom:24px; }
+.price-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 0; border-bottom:1px solid rgba(201,168,76,0.07);
+  font-size:13px; color:var(--muted);
+}
+.price-row:last-child { border-bottom:none; }
+.price-row.total { color:var(--cream); font-size:15px; padding-top:16px; border-top:1px solid var(--border); }
+.price-row.total .val { font-family:'Cormorant Garamond',serif; font-size:26px; color:var(--gold); }
+
+/* ── QR ── */
+.qr-section {
+  text-align:center;
+  padding:24px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.02);
+  border-radius:2px;
+  margin-bottom:20px;
+}
+.qr-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:16px; }
+.qr-section img {
+  width:160px; height:160px; object-fit:contain;
+  border:1px solid var(--border); border-radius:2px;
+  transition:transform 0.3s;
+}
+.qr-section img:hover { transform:scale(1.05); }
+.qr-note { margin-top:12px; font-size:11px; color:var(--muted); line-height:1.6; }
+
+/* ── TRUST ── */
+.trust-list { display:flex; flex-direction:column; gap:10px; }
+.trust-item { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--muted); }
+.trust-icon { color:var(--gold); width:16px; text-align:center; }
+
+/* ── REVEAL ── */
+.reveal { opacity:0; transform:translateY(24px); transition:opacity 0.7s ease, transform 0.7s ease; }
+.reveal.active { opacity:1; transform:translateY(0); }
+
+/* ── TOAST ── */
+#toast {
+  position:fixed; bottom:36px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:var(--card); border:1px solid var(--border);
+  color:var(--cream); padding:12px 24px; font-size:13px; letter-spacing:1px;
+  z-index:9999; transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events:none; white-space:nowrap;
+}
+#toast.show { transform:translateX(-50%) translateY(0); }
+
+@media(max-width:900px){
+  .page { grid-template-columns:1fr; padding:100px 4% 60px; }
+  .form-row { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-logo">KSLEEP</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div class="particles" id="particles"></div>
+<div id="toast" id="toast">Order placed!</div>
+
+<header>
+  <div class="logo">K·Sleep</div>
+  <div class="secure-badge">SSL Secured Checkout</div>
+  <button class="back-btn" onclick="history.back()">
+    <span class="back-arrow">←</span> Back
+  </button>
+</header>
+
+<div class="page">
+
+  <!-- ── LEFT: BILLING FORM ── -->
+  <div class="section-card reveal">
+    <div class="card-title">Billing Details <span>Step 1 of 1</span></div>
+
+    <form action="/placeOrder" method="post" class="form-grid" onsubmit="return validateForm()">
+
+      <!-- ✅ HIDDEN FIELDS — auto-filled from URL params sent by fulldeatailprodect.html -->
+      <input type="hidden" name="pName"      id="PName">
+      <input type="hidden" name="pprice"     id="prodectprice">
+      <input type="hidden" name="product_id" id="productIdField">
+      <input type="hidden" name="image"      id="productImage">
+      <input type="hidden" name="qty"        id="qtyField">
+
+      <div class="field">
+        <label>Full Name *</label>
+        <input type="text" name="username" placeholder="e.g. Rahul Sharma" required>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Email Address *</label>
+          <input type="email" name="email" placeholder="you@example.com" required>
+        </div>
+        <div class="field">
+          <label>Mobile Number *</label>
+          <input type="tel" name="mobile" placeholder="+91 98765 43210" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Full Address *</label>
+        <textarea name="address" placeholder="House No., Street, Area, Landmark..." required></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>State *</label>
+          <input type="text" name="state" placeholder="e.g. Rajasthan" required>
+        </div>
+        <div class="field">
+          <label>City *</label>
+          <input type="text" name="city" placeholder="e.g. Ajmer" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Pin Code *</label>
+          <input type="text" name="pincode" placeholder="e.g. 305001" maxlength="6" required>
+        </div>
+        <div class="field">
+          <label>Country</label>
+          <input type="text" name="country" value="India" readonly>
+        </div>
+      </div>
+
+      <a href="index.html"><button type="submit" class="btn-submit">Confirm & Place Order &nbsp;✦</button></a>
+
+    </form>
+  </div>
+
+  <!-- ── RIGHT: ORDER SUMMARY ── -->
+  <div style="display:flex;flex-direction:column;gap:24px;">
+
+    <!-- Product preview -->
+    <div class="section-card reveal">
+      <div class="card-title">Order Summary</div>
+
+      <div class="product-preview">
+        <img id="summaryImg" src="https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=200" alt="Product">
+        <div class="product-preview-info">
+          <p class="preview-tag">KSleep Premium</p>
+          <p class="preview-name" id="summaryName">Loading...</p>
+          <p class="preview-price" id="summaryPrice">₹—</p>
+        </div>
+      </div>
+
+      <div class="price-rows">
+        <div class="price-row">
+          <span>Product Price</span>
+          <span class="val" id="priceBreakdown">₹—</span>
+        </div>
+        <div class="price-row">
+          <span>Quantity</span>
+          <span class="val" id="qtyDisplay">1</span>
+        </div>
+        <div class="price-row">
+          <span>Delivery</span>
+          <span style="color:#6dbf6d;">FREE</span>
+        </div>
+        <div class="price-row total">
+          <span>Total</span>
+          <span class="val" id="totalPrice">₹—</span>
+        </div>
+      </div>
+
+      <div class="trust-list">
+        <div class="trust-item"><span class="trust-icon">✦</span> Free delivery across India</div>
+        <div class="trust-item"><span class="trust-icon">✦</span> 30-day hassle-free returns</div>
+        <div class="trust-item"><span class="trust-icon">✦</span> 10-year warranty included</div>
+        <div class="trust-item"><span class="trust-icon">✦</span> Secure SSL payment</div>
+      </div>
+    </div>
+
+    <!-- QR Payment -->
+    <div class="section-card reveal">
+      <div class="card-title">Scan & Pay <span>PhonePe / GPay / UPI</span></div>
+      <div class="qr-section">
+        <p class="qr-label">Scan QR Code</p>
+        <img src="http://localhost:1234/images/QRcode.jpeg"
+             alt="Payment QR"
+             onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=KSleep-Payment'">
+        <p class="qr-note" id="qrNote">Pay ₹— for your KSleep order</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── LOADER ──
+window.addEventListener('load', () => { setTimeout(() => document.getElementById('loader').classList.add('done'), 1600); });
+
+// ── CURSOR ──
+const cur = document.getElementById('cursor'), ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cur.style.left=mx+'px'; cur.style.top=my+'px'; });
+(function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); })();
+document.querySelectorAll('input,textarea,button,a').forEach(el => {
+  el.addEventListener('mouseenter', () => ring.style.transform='translate(-50%,-50%) scale(1.5)');
+  el.addEventListener('mouseleave', () => ring.style.transform='translate(-50%,-50%) scale(1)');
+});
+
+// ── PARTICLES ──
+const pc = document.getElementById('particles');
+for(let i=0;i<18;i++){
+  const p=document.createElement('div'); p.className='particle';
+  p.style.cssText=`left:${Math.random()*100}%;--d:${6+Math.random()*12}s;--delay:${Math.random()*10}s;--dx:${(Math.random()-0.5)*60}px;`;
+  pc.appendChild(p);
+}
+
+// =========================================
+// ✅ READ ALL URL PARAMS & FILL HIDDEN FIELDS
+// =========================================
+window.onload = function() {
+  const params = new URLSearchParams(window.location.search);
+
+  const id    = params.get('id')    || '';
+  const price = params.get('price') || '';
+  const name  = params.get('name')  || '';
+  const image = params.get('image') || '';
+  const qty   = params.get('qty')   || '1';
+
+  // ✅ Fill ALL hidden form fields
+  document.getElementById('PName').value          = name;
+  document.getElementById('prodectprice').value   = price;
+  document.getElementById('productIdField').value = id;
+  document.getElementById('qtyField').value       = qty;
+
+  // ✅ Fetch image from backend (same as your original logic)
+  if(id) {
+    fetch(`http://localhost:1234/fechdata/${id}`)
+      .then(res => res.json())
+      .then(product => {
+        const img = product.image1 || image;
+        document.getElementById('productImage').value = img;
+        document.getElementById('summaryImg').src     = img;
+      })
+      .catch(() => {
+        // Fallback: use image from URL param
+        document.getElementById('productImage').value = image;
+        if(image) document.getElementById('summaryImg').src = decodeURIComponent(image);
+      });
+  } else if(image) {
+    document.getElementById('productImage').value = decodeURIComponent(image);
+    document.getElementById('summaryImg').src     = decodeURIComponent(image);
+  }
+
+  // ── Populate order summary UI ──
+  if(name)  document.getElementById('summaryName').textContent = name;
+  if(price) {
+    const priceNum = parseFloat(String(price).replace(/,/g,''));
+    const qtyNum   = parseInt(qty) || 1;
+    const total    = (priceNum * qtyNum).toLocaleString('en-IN');
+
+    document.getElementById('summaryPrice').textContent  = '₹' + price;
+    document.getElementById('priceBreakdown').textContent = '₹' + price;
+    document.getElementById('qtyDisplay').textContent    = qty;
+    document.getElementById('totalPrice').textContent    = '₹' + total;
+    document.getElementById('qrNote').textContent        = `Pay ₹${total} for your KSleep order`;
+  }
+
+  // Reveal animations
+  setTimeout(() => {
+    document.querySelectorAll('.reveal').forEach((el, i) => {
+      setTimeout(() => el.classList.add('active'), i * 120);
+    });
+  }, 400);
+};
+
+// ── FORM VALIDATION ──
+function validateForm(){
+  const pincode = document.querySelector('input[name="pincode"]').value;
+  if(!/^\d{6}$/.test(pincode)){
+    showToast('Please enter a valid 6-digit pin code');
+    return false;
+  }
+  const mobile = document.querySelector('input[name="mobile"]').value.replace(/\D/g,'');
+  if(mobile.length < 10){
+    showToast('Please enter a valid 10-digit mobile number');
+    return false;
+  }
+  return true;
+}
+
+// ── TOAST ──
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

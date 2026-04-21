@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KSleep — Product Detail</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#07070f;--deep:#0e0e1a;--surface:#13131f;--card:#1a1a2a;
+  --gold:#c9a84c;--gold2:#e8c96e;--cream:#f5f0e8;--muted:#6b6575;
+  --glass:rgba(255,255,255,0.04);--glass-border:rgba(201,168,76,0.18);
+}
+body{background:var(--ink);color:var(--cream);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh;}
+
+/* CURSOR */
+#cursor{position:fixed;width:14px;height:14px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width 0.2s,height 0.2s;mix-blend-mode:difference;}
+#cursor-ring{position:fixed;width:40px;height:40px;border-radius:50%;border:1px solid rgba(201,168,76,0.5);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all 0.12s ease;}
+
+/* LOADER */
+#loader{position:fixed;inset:0;z-index:99999;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.8s,visibility 0.8s;}
+#loader.done{opacity:0;visibility:hidden;}
+.loader-logo{font-family:'Cormorant Garamond',serif;font-size:40px;color:var(--gold);letter-spacing:6px;margin-bottom:40px;animation:pulse 1.5s ease-in-out infinite;}
+.loader-bar{width:200px;height:1px;background:rgba(201,168,76,0.2);}
+.loader-fill{height:100%;background:var(--gold);animation:loadFill 1.6s ease forwards;}
+@keyframes loadFill{from{width:0;}to{width:100%;}}
+@keyframes pulse{0%,100%{opacity:0.5;}50%{opacity:1;}}
+
+/* HEADER */
+header{position:fixed;top:0;width:100%;padding:20px 6%;display:flex;justify-content:space-between;align-items:center;z-index:1000;backdrop-filter:blur(20px);background:rgba(7,7,15,0.7);border-bottom:1px solid rgba(201,168,76,0.08);}
+.logo{font-family:'Cormorant Garamond',serif;font-size:24px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;}
+.back-btn{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.3s;}
+.back-btn:hover{color:var(--gold);}
+.back-arrow{font-size:16px;transition:transform 0.3s;}
+.back-btn:hover .back-arrow{transform:translateX(-4px);}
+
+/* PARTICLES */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;}
+.particle{position:absolute;width:1.5px;height:1.5px;border-radius:50%;background:var(--gold);opacity:0;animation:float var(--dur,8s) var(--delay,0s) infinite ease-in-out;}
+@keyframes float{0%{opacity:0;transform:translateY(100vh);}10%{opacity:0.3;}90%{opacity:0.08;}100%{opacity:0;transform:translateY(-10vh) translateX(var(--dx,20px));}}
+
+/* MAIN WRAPPER */
+.wrapper{max-width:1200px;margin:0 auto;padding:120px 6% 80px;display:flex;gap:80px;flex-wrap:wrap;min-height:100vh;}
+
+/* LEFT — IMAGE PANEL */
+.image-panel{flex:1;min-width:320px;position:sticky;top:120px;align-self:flex-start;}
+.main-image-wrap{
+  position:relative;overflow:hidden;border-radius:4px;
+  border:1px solid var(--glass-border);height:480px;
+  transform-style:preserve-3d;transition:transform 0.1s ease;cursor:none;
+}
+.main-image-wrap img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s ease,filter 0.4s ease;filter:brightness(0.88);}
+.main-image-wrap:hover img{transform:scale(1.05);filter:brightness(1);}
+.img-shimmer{position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,0.06) 50%,transparent 60%);transform:translateX(-100%);pointer-events:none;transition:transform 0.9s ease;}
+.main-image-wrap:hover .img-shimmer{transform:translateX(100%);}
+.img-badge{position:absolute;top:20px;left:20px;background:var(--gold);color:var(--ink);font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:6px 14px;font-weight:500;}
+.zoom-hint{position:absolute;bottom:16px;right:16px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,0.7);background:rgba(7,7,15,0.7);padding:6px 12px;border:1px solid rgba(201,168,76,0.15);}
+
+/* THUMBNAILS */
+.thumbnails{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+.thumb{width:80px;height:80px;object-fit:cover;border:1px solid rgba(201,168,76,0.12);cursor:pointer;transition:all 0.3s;filter:brightness(0.7);}
+.thumb:hover{filter:brightness(1);border-color:rgba(201,168,76,0.5);}
+.thumb.active{border:1px solid var(--gold);filter:brightness(1);}
+
+/* RIGHT — DETAILS PANEL */
+.details-panel{flex:1;min-width:320px;padding-top:10px;}
+.prod-tag{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:18px;}
+.prod-name{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,4vw,56px);font-weight:400;line-height:1.1;color:var(--cream);margin-bottom:20px;}
+.prod-name em{font-style:italic;color:var(--gold);}
+.divider{width:60px;height:1px;background:var(--gold);margin-bottom:28px;opacity:0.5;}
+
+/* PRICE */
+.price-wrap{display:flex;align-items:baseline;gap:12px;margin-bottom:32px;}
+.price-main{font-family:'Cormorant Garamond',serif;font-size:44px;color:var(--gold);}
+.price-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+
+/* SPECS */
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
+.spec-card{padding:16px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.02);transition:border-color 0.3s,background 0.3s;}
+.spec-card:hover{border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.04);}
+.spec-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.spec-value{font-size:15px;color:var(--cream);}
+
+/* DESCRIPTION */
+.desc-title{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.description{font-size:14px;line-height:1.9;color:var(--muted);margin-bottom:36px;border-left:1px solid rgba(201,168,76,0.25);padding-left:20px;}
+
+/* RATING */
+.rating-row{display:flex;align-items:center;gap:12px;margin-bottom:32px;}
+.stars{display:flex;gap:3px;}
+.star{width:14px;height:14px;background:var(--gold);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);}
+.star.half{opacity:0.4;}
+.rating-text{font-size:13px;color:var(--muted);}
+
+/* QUANTITY */
+.qty-row{display:flex;align-items:center;gap:16px;margin-bottom:32px;}
+.qty-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.qty-ctrl{display:flex;align-items:center;gap:0;border:1px solid var(--glass-border);}
+.qty-btn{width:40px;height:40px;background:none;border:none;color:var(--gold);font-size:18px;cursor:pointer;transition:background 0.2s;}
+.qty-btn:hover{background:rgba(201,168,76,0.1);}
+.qty-num{width:48px;height:40px;display:flex;align-items:center;justify-content:center;font-size:16px;border-left:1px solid var(--glass-border);border-right:1px solid var(--glass-border);}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
+.btn-cart{
+  flex:1;min-width:160px;padding:16px 32px;
+  background:var(--gold);color:var(--ink);
+  border:none;font-size:12px;letter-spacing:2px;text-transform:uppercase;
+  cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;
+  transition:all 0.3s;
+  clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+  position:relative;overflow:hidden;
+}
+.btn-cart::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0.15);transform:translateX(-100%);transition:transform 0.3s;}
+.btn-cart:hover::after{transform:translateX(0);}
+.btn-cart:hover{background:var(--gold2);transform:translateY(-2px);}
+.btn-wish{
+  width:52px;height:52px;background:transparent;border:1px solid var(--glass-border);
+  color:var(--gold);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;
+}
+.btn-wish:hover{border-color:var(--gold);background:rgba(201,168,76,0.08);}
+.btn-wish.liked{background:rgba(201,168,76,0.15);border-color:var(--gold);}
+
+/* TRUST BADGES */
+.trust-row{display:flex;gap:20px;flex-wrap:wrap;border-top:1px solid var(--glass-border);padding-top:24px;}
+.trust-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);}
+.trust-icon{color:var(--gold);font-size:16px;}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 0.8s ease,transform 0.8s ease;}
+.reveal.active{opacity:1;transform:translateY(0);}
+.reveal-left{opacity:0;transform:translateX(-30px);transition:opacity 0.8s ease,transform 0.8s ease;}
+.reveal-left.active{opacity:1;transform:translateX(0);}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--card);border:1px solid var(--glass-border);
+  color:var(--cream);padding:14px 28px;font-size:13px;letter-spacing:1px;
+  z-index:9999;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events:none;white-space:nowrap;
+}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast .toast-gold{color:var(--gold);}
+
+@media(max-width:768px){
+  .wrapper{flex-direction:column;gap:40px;padding:100px 4% 60px;}
+  .image-panel{position:static;}
+  .specs{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-logo">KSLEEP</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div class="particles" id="particles"></div>
+<div id="toast"><span class="toast-gold">✦</span> &nbsp;<span id="toastMsg">Added to cart</span></div>
+
+<header>
+  <div class="logo">K·Sleep</div>
+  <button class="back-btn" onclick="history.back()">
+    <span class="back-arrow">←</span> Back to Collection
+  </button>
+</header>
+
+<div class="wrapper">
+
+  <!-- LEFT -->
+  <div class="image-panel reveal-left">
+    <div class="main-image-wrap" id="mainWrap"
+      onmousemove="tilt3D(event,this)" onmouseleave="resetTilt(this)">
+      <img id="mainImg" src="https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=900&q=80" alt="Product">
+      <div class="img-shimmer"></div>
+      <div class="img-badge" id="imgBadge">Bestseller</div>
+      <div class="zoom-hint">Hover to zoom</div>
+    </div>
+    <div class="thumbnails" id="thumbnails"></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="details-panel">
+    <p class="prod-tag reveal" id="prodTag">— Luxury Collection —</p>
+    <h1 class="prod-name reveal" id="prodName">Aurora <em>Silk</em> Pillow</h1>
+    <div class="divider reveal"></div>
+
+    <div class="price-wrap reveal">
+      <span class="price-main" id="prodPrice">₹4,299</span>
+      <span class="price-label">Incl. of all taxes</span>
+    </div>
+
+    <div class="rating-row reveal">
+      <div class="stars">
+        <div class="star"></div><div class="star"></div><div class="star"></div>
+        <div class="star"></div><div class="star half"></div>
+      </div>
+      <span class="rating-text">4.8 · 238 reviews</span>
+    </div>
+
+    <div class="specs reveal" id="specsGrid">
+      <div class="spec-card"><div class="spec-label">Material</div><div class="spec-value" id="specMaterial">Mulberry Silk</div></div>
+      <div class="spec-card"><div class="spec-label">Comfort</div><div class="spec-value" id="specComfort">Ultra Soft</div></div>
+      <div class="spec-card"><div class="spec-label">Thread Count</div><div class="spec-value">400 TC</div></div>
+      <div class="spec-card"><div class="spec-label">Warranty</div><div class="spec-value">2 Years</div></div>
+    </div>
+
+    <div class="reveal">
+      <p class="desc-title">About this product</p>
+      <p class="description" id="prodDesc">Premium quality sleep product crafted with the finest materials for ultimate comfort.</p>
+    </div>
+
+    <div class="qty-row reveal">
+      <span class="qty-label">Quantity</span>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <div class="qty-num" id="qtyNum">1</div>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+    </div>
+
+    <div class="btn-row reveal">
+      <!-- ✅ FIXED: calls goToPayment() which passes ALL hidden fields via URL -->
+      <button class="btn-cart" onclick="goToPayment()">Buy Now &nbsp;✦</button>
+      <button class="btn-wish" id="wishBtn" onclick="toggleWish()" title="Wishlist">♡</button>
+    </div>
+
+    <div class="trust-row reveal">
+      <div class="trust-item"><span class="trust-icon">✦</span> Free Delivery</div>
+      <div class="trust-item"><span class="trust-icon">✦</span> 30-Day Returns</div>
+      <div class="trust-item"><span class="trust-icon">✦</span> Secure Payment</div>
+      <div class="trust-item"><span class="trust-icon">✦</span> Gift Wrapping</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── LOADER ──
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('loader').classList.add('done'), 1800);
+});
+
+// ── CURSOR ──
+const cur = document.getElementById('cursor'), ring = document.getElementById('cursor-ring');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cur.style.left=mx+'px'; cur.style.top=my+'px'; });
+(function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); })();
+
+// ── PARTICLES ──
+const pc = document.getElementById('particles');
+for(let i=0; i<20; i++){
+  const p = document.createElement('div'); p.className='particle';
+  p.style.cssText=`left:${Math.random()*100}%;--dur:${6+Math.random()*12}s;--delay:${Math.random()*10}s;--dx:${(Math.random()-0.5)*60}px;`;
+  pc.appendChild(p);
+}
+
+// ── PRODUCT STATE — all data stored here for passing to payment ──
+let productId    = null;
+let selectedImage = null;
+let productPrice  = null;
+let productName   = null;
+let qty           = 1;
+
+// ── DEMO FALLBACK ──
+const demo = {
+  id:1, productName:'Aurora Silk Pillow', price:'4,299', tag:'Bestseller',
+  material:'22 Momme Mulberry Silk', comfortLevel:'Ultra Soft',
+  productDescription:'Handwoven 22 momme mulberry silk. Temperature regulating through all seasons. Hypoallergenic and incredibly gentle on skin and hair.',
+  image1:'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=900&q=80',
+  image2:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=900&q=80',
+  image3:'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=900&q=80',
+  image4:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80',
+};
+
+// ── FETCH PRODUCT ──
+const params = new URLSearchParams(window.location.search);
+const urlId  = params.get('id');
+
+function loadProduct(product) {
+  // ✅ Store all data in module-level variables
+  productId     = product.id;
+  selectedImage = product.image1;
+  productPrice  = product.price;
+  productName   = product.productName;
+
+  // Populate UI
+  document.getElementById('prodName').innerHTML = product.productName.replace(/(\S+)\s*$/, '<em>$1</em>');
+  document.getElementById('prodPrice').textContent = '₹' + product.price;
+  document.getElementById('prodDesc').textContent  = product.productDescription || 'Premium quality sleep product crafted with the finest materials.';
+  document.getElementById('prodTag').textContent   = '— ' + (product.tag || 'Luxury Collection') + ' —';
+  document.getElementById('imgBadge').textContent  = product.tag || 'Premium';
+  document.getElementById('specMaterial').textContent = product.material     || 'Premium Fabric';
+  document.getElementById('specComfort').textContent  = product.comfortLevel || 'Ultra Soft';
+  document.getElementById('mainImg').src = product.image1;
+
+  // Thumbnails
+  const imgs = [product.image1, product.image2, product.image3, product.image4, product.image5].filter(Boolean);
+  const tc = document.getElementById('thumbnails');
+  tc.innerHTML = '';
+  imgs.forEach((src, i) => {
+    const img = document.createElement('img');
+    img.src = src; img.className = 'thumb' + (i===0 ? ' active' : '');
+    img.onclick = () => changeImage(img, src);
+    tc.appendChild(img);
+  });
+
+  revealAll();
+}
+
+if(urlId) {
+  fetch(`http://localhost:1234/fechdata/${urlId}`)
+    .then(r => r.json())
+    .then(loadProduct)
+    .catch(() => loadProduct(demo));
+} else {
+  loadProduct(demo);
+}
+
+// ── CHANGE IMAGE ──
+function changeImage(el, src) {
+  const mainImg = document.getElementById('mainImg');
+  mainImg.style.opacity = '0'; mainImg.style.transform = 'scale(1.05)';
+  setTimeout(() => {
+    mainImg.src = src;
+    selectedImage = src;           // ✅ Update selectedImage when thumbnail clicked
+    mainImg.style.transition = 'opacity 0.4s,transform 0.4s';
+    mainImg.style.opacity = '1'; mainImg.style.transform = 'scale(1)';
+  }, 200);
+  document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── 3D TILT ──
+function tilt3D(e, el){
+  const r = el.getBoundingClientRect();
+  const x = (e.clientX-r.left)/r.width, y = (e.clientY-r.top)/r.height;
+  el.style.transform = `perspective(900px) rotateX(${(y-0.5)*-14}deg) rotateY(${(x-0.5)*14}deg) scale3d(1.03,1.03,1.03)`;
+}
+function resetTilt(el){ el.style.transform='perspective(900px) rotateX(0) rotateY(0) scale3d(1,1,1)'; }
+
+// ── QUANTITY ──
+function changeQty(d){ qty=Math.max(1,Math.min(99,qty+d)); document.getElementById('qtyNum').textContent=qty; }
+
+// ── WISHLIST ──
+let wished = false;
+function toggleWish(){
+  wished = !wished;
+  const b = document.getElementById('wishBtn');
+  b.textContent = wished ? '♥' : '♡';
+  b.classList.toggle('liked', wished);
+  showToast(wished ? 'Added to Wishlist ♥' : 'Removed from Wishlist');
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg){
+  document.getElementById('toastMsg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── REVEAL ──
+function revealAll(){
+  setTimeout(() => {
+    document.querySelectorAll('.reveal,.reveal-left').forEach((el,i) => {
+      setTimeout(() => el.classList.add('active'), i*80);
+    });
+  }, 300);
+}
+
+// ── ✅ PAYMENT — passes ALL hidden field data via URL params ──
+function goToPayment(){
+  if(!productId){ showToast('Product not loaded yet'); return; }
+
+  const url = 'paymentgatvey.html'
+    + '?id='    + encodeURIComponent(productId)
+    + '&price=' + encodeURIComponent(productPrice)
+    + '&name='  + encodeURIComponent(productName)
+    + '&image=' + encodeURIComponent(selectedImage)
+    + '&qty='   + encodeURIComponent(qty);
+
+  window.location.href = url;
+}
+</script>
+</body>
+</html>

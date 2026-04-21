@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login - KSleep</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+--primary:#0f172a;
+--accent:#ff6a00;
+--light:#f8fafc;
+--gray:#64748b;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(120deg,#f8fafc,#e2e8f0);
+}
+
+/* login card */
+
+.login-card{
+
+background:white;
+padding:40px;
+width:360px;
+border-radius:15px;
+box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* logo */
+
+.logo{
+text-align:center;
+font-size:26px;
+font-weight:700;
+color:var(--accent);
+margin-bottom:20px;
+}
+
+/* title */
+
+h2{
+text-align:center;
+margin-bottom:25px;
+color:var(--primary);
+}
+
+/* labels */
+
+label{
+font-size:14px;
+font-weight:500;
+color:var(--primary);
+}
+
+/* inputs */
+
+input{
+width:100%;
+padding:12px;
+margin-top:6px;
+margin-bottom:18px;
+border-radius:6px;
+border:1px solid #ddd;
+outline:none;
+font-size:14px;
+}
+
+input:focus{
+border-color:var(--accent);
+}
+
+/* button */
+
+button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:30px;
+background:var(--accent);
+color:white;
+font-size:16px;
+font-weight:600;
+cursor:pointer;
+transition:.3s;
+}
+
+button:hover{
+background:#e65c00;
+}
+
+/* signup link */
+
+p{
+text-align:center;
+margin-top:15px;
+color:var(--gray);
+}
+
+a{
+color:var(--accent);
+font-weight:500;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="login-card">
+
+<div class="logo">KSleep</div>
+
+<h2>Login Account</h2>
+
+<form action="/loginpage" method="post">
+
+<input type="hidden" name="id" id="productId">
+
+<label>Email</label>
+<input type="email" name="email" placeholder="Enter Email" required>
+
+<label>Password</label>
+<input type="password" name="password" placeholder="Enter Password" required>
+
+<button type="submit">Login</button>
+
+</form>
+
+<p>Don't have an account?  
+<a href="sigeup.html">Signup</a>
+</p>
+
+</div>
+
+<script>
+
+/* get product id from URL */
+
+const params = new URLSearchParams(window.location.search);
+
+const id = params.get("id");
+
+document.getElementById("productId").value = id;
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KSleep — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#07070f;--deep:#0e0e1a;--surface:#13131f;--card:#1a1a2a;
+  --gold:#c9a84c;--gold2:#e8c96e;--cream:#f5f0e8;--muted:#6b6575;
+  --glass:rgba(255,255,255,0.04);--glass-border:rgba(201,168,76,0.18);
+}
+body{
+  background:var(--ink);color:var(--cream);
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;
+}
+
+/* CURSOR */
+#cursor{position:fixed;width:14px;height:14px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width 0.2s,height 0.2s;mix-blend-mode:difference;}
+#cursor-ring{position:fixed;width:40px;height:40px;border-radius:50%;border:1px solid rgba(201,168,76,0.5);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all 0.12s ease;}
+
+/* LOADER */
+#loader{position:fixed;inset:0;z-index:99999;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.8s,visibility 0.8s;}
+#loader.done{opacity:0;visibility:hidden;}
+.loader-logo{font-family:'Cormorant Garamond',serif;font-size:40px;color:var(--gold);letter-spacing:6px;margin-bottom:40px;animation:pulse 1.5s ease-in-out infinite;}
+.loader-bar{width:200px;height:1px;background:rgba(201,168,76,0.2);}
+.loader-fill{height:100%;background:var(--gold);animation:loadFill 1.6s ease forwards;}
+@keyframes loadFill{from{width:0;}to{width:100%;}}
+@keyframes pulse{0%,100%{opacity:0.5;}50%{opacity:1;}}
+
+/* PARTICLES */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.particle{position:absolute;border-radius:50%;background:var(--gold);opacity:0;animation:floatP var(--dur,8s) var(--delay,0s) infinite ease-in-out;}
+@keyframes floatP{0%{opacity:0;transform:translateY(100vh) translateX(0);}10%{opacity:0.35;}90%{opacity:0.08;}100%{opacity:0;transform:translateY(-10vh) translateX(var(--dx,20px));}}
+
+/* BG GLOW */
+.bg-glow{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.glow-orb{position:absolute;border-radius:50%;filter:blur(80px);animation:orbFloat 12s ease-in-out infinite alternate;}
+.glow-orb.a{width:400px;height:400px;background:rgba(201,168,76,0.06);top:-100px;right:-100px;}
+.glow-orb.b{width:300px;height:300px;background:rgba(201,168,76,0.04);bottom:-80px;left:-80px;animation-delay:-6s;}
+@keyframes orbFloat{from{transform:translate(0,0);}to{transform:translate(30px,30px);}}
+
+/* CARD */
+.card{
+  position:relative;z-index:2;
+  width:100%;max-width:460px;
+  padding:52px 44px;
+  background:var(--card);
+  border:1px solid var(--glass-border);
+  transform-style:preserve-3d;
+  transition:transform 0.15s ease;
+  animation:cardIn 0.9s cubic-bezier(0.23,1,0.32,1) both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(50px) rotateX(6deg);}to{opacity:1;transform:translateY(0) rotateX(0);}}
+
+/* CORNER ACCENTS */
+.card::before,.card::after{
+  content:'';position:absolute;width:24px;height:24px;
+  border-color:var(--gold);border-style:solid;opacity:0.5;
+}
+.card::before{top:-1px;left:-1px;border-width:1px 0 0 1px;}
+.card::after{bottom:-1px;right:-1px;border-width:0 1px 1px 0;}
+
+/* HEADER */
+.card-header{text-align:center;margin-bottom:44px;}
+.admin-icon{
+  width:64px;height:64px;border-radius:50%;
+  background:rgba(201,168,76,0.1);border:1px solid var(--glass-border);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;font-size:26px;
+  animation:iconPulse 3s ease-in-out infinite;
+}
+@keyframes iconPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0.2);}50%{box-shadow:0 0 0 12px rgba(201,168,76,0);}}
+.card-eyebrow{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:400;color:var(--cream);}
+.card-title em{font-style:italic;color:var(--gold);}
+.card-divider{width:40px;height:1px;background:var(--gold);margin:16px auto 0;opacity:0.4;}
+
+/* FORM */
+.form-group{margin-bottom:24px;position:relative;}
+.form-label{
+  display:block;font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px;transition:color 0.3s;
+}
+.form-group:focus-within .form-label{color:var(--gold);}
+
+.input-wrap{position:relative;}
+.input-icon{
+  position:absolute;left:16px;top:50%;transform:translateY(-50%);
+  font-size:15px;color:var(--muted);pointer-events:none;
+  transition:color 0.3s;
+}
+.form-group:focus-within .input-icon{color:var(--gold);}
+
+input[type=text],input[type=email],input[type=tel]{
+  width:100%;padding:14px 16px 14px 44px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(201,168,76,0.15);
+  color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;
+  outline:none;transition:all 0.3s;
+}
+input::placeholder{color:var(--muted);font-size:13px;}
+input:focus{
+  border-color:rgba(201,168,76,0.6);
+  background:rgba(201,168,76,0.04);
+  box-shadow:0 0 0 3px rgba(201,168,76,0.08);
+}
+
+/* FOCUS LINE */
+.focus-line{
+  position:absolute;bottom:0;left:0;width:0;height:1px;
+  background:var(--gold);transition:width 0.4s ease;
+}
+.form-group:focus-within .focus-line{width:100%;}
+
+/* SUBMIT BTN */
+.btn-submit{
+  width:100%;padding:16px;margin-top:8px;
+  background:var(--gold);color:var(--ink);
+  border:none;font-size:12px;letter-spacing:3px;text-transform:uppercase;
+  cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;
+  clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
+  position:relative;overflow:hidden;transition:all 0.3s;
+}
+.btn-submit::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);
+  transform:translateX(-100%);transition:transform 0.5s;
+}
+.btn-submit:hover::before{transform:translateX(100%);}
+.btn-submit:hover{background:var(--gold2);transform:translateY(-2px);}
+.btn-submit:active{transform:translateY(0) scale(0.99);}
+
+/* SUCCESS STATE */
+.btn-submit.success{background:#1e7e4a;color:#fff;clip-path:none;border-radius:2px;}
+
+/* FOOTER */
+.card-footer{
+  text-align:center;margin-top:28px;
+  font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);border-top:1px solid var(--glass-border);padding-top:24px;
+}
+.card-footer span{color:var(--gold);}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--card);border:1px solid var(--glass-border);
+  color:var(--cream);padding:14px 28px;font-size:13px;letter-spacing:1px;
+  z-index:9999;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events:none;white-space:nowrap;
+}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+/* REVEAL */
+.form-group{opacity:0;transform:translateY(16px);animation:fgIn 0.6s ease forwards;}
+.form-group:nth-child(1){animation-delay:0.5s;}
+.form-group:nth-child(2){animation-delay:0.65s;}
+.form-group:nth-child(3){animation-delay:0.8s;}
+.btn-wrap{opacity:0;animation:fgIn 0.6s 0.95s ease forwards;}
+@keyframes fgIn{to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-logo">KSLEEP</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<div class="bg-glow">
+  <div class="glow-orb a"></div>
+  <div class="glow-orb b"></div>
+</div>
+
+<div class="particles" id="particles"></div>
+
+<div id="toast" id="toast">✦ &nbsp;<span id="toastMsg">Admin created successfully</span></div>
+
+<div class="card" id="card"
+  onmousemove="tiltCard(event,this)"
+  onmouseleave="resetCard(this)">
+
+  <div class="card-header">
+    <div class="admin-icon">⬡</div>
+    <p class="card-eyebrow">— Secure Access —</p>
+    <h1 class="card-title">Admin <em>Registration</em></h1>
+    <div class="card-divider"></div>
+  </div>
+
+  <form action="/saveAdmin" method="get" onsubmit="handleSubmit(event)">
+
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <div class="input-wrap">
+        <span class="input-icon">◈</span>
+        <input type="text" name="name" placeholder="Enter your username" required>
+        <div class="focus-line"></div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <div class="input-wrap">
+        <span class="input-icon">◎</span>
+        <input type="email" name="email" placeholder="Enter your email" required>
+        <div class="focus-line"></div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Mobile Number</label>
+      <div class="input-wrap">
+        <span class="input-icon">◉</span>
+        <input type="tel" name="mo" placeholder="Enter mobile number" required>
+        <div class="focus-line"></div>
+      </div>
+    </div>
+
+    <div class="btn-wrap">
+      <button type="submit" class="btn-submit" id="submitBtn">
+        Create Admin Account &nbsp;✦
+      </button>
+    </div>
+
+  </form>
+
+  <div class="card-footer">
+    KSleep Professional Admin Panel &nbsp;·&nbsp; <span>© 2026</span>
+  </div>
+
+</div>
+
+<script>
+// LOADER
+window.addEventListener('load',()=>{setTimeout(()=>document.getElementById('loader').classList.add('done'),1800);});
+
+// CURSOR
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
+
+// PARTICLES
+const pc=document.getElementById('particles');
+for(let i=0;i<22;i++){
+  const p=document.createElement('div');p.className='particle';
+  const big=Math.random()>0.7;
+  p.style.cssText=`left:${Math.random()*100}%;width:${big?2.5:1.5}px;height:${big?2.5:1.5}px;--dur:${7+Math.random()*12}s;--delay:${Math.random()*10}s;--dx:${(Math.random()-0.5)*70}px;`;
+  pc.appendChild(p);
+}
+
+// 3D TILT ON CARD
+function tiltCard(e,el){
+  const r=el.getBoundingClientRect();
+  const x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+  el.style.transform=`perspective(1000px) rotateX(${(y-0.5)*-10}deg) rotateY(${(x-0.5)*10}deg)`;
+}
+function resetCard(el){
+  el.style.transform='perspective(1000px) rotateX(0) rotateY(0)';
+}
+
+// SUBMIT
+function handleSubmit(e){
+  const btn=document.getElementById('submitBtn');
+  btn.textContent='✦  Creating Account...';
+  btn.style.opacity='0.7';
+  btn.disabled=true;
+  setTimeout(()=>{
+    btn.classList.add('success');
+    btn.textContent='✔  Admin Created Successfully';
+    showToast('Admin account created! ✦');
+    setTimeout(()=>e.target.submit(),1200);
+  },1000);
+  e.preventDefault();
+}
+
+// TOAST
+let tt;
+function showToast(msg){
+  document.getElementById('toastMsg').textContent=msg;
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// INPUT FOCUS CURSOR EXPAND
+document.querySelectorAll('input').forEach(inp=>{
+  inp.addEventListener('focus',()=>{cur.style.width='50px';cur.style.height='50px';});
+  inp.addEventListener('blur',()=>{cur.style.width='14px';cur.style.height='14px';});
+});
+</script>
+</body>
+</html>

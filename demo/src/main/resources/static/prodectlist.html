@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>KSleep Premium Products</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans&family=Cormorant+Garamond&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+--bg:#0a0a0f;
+--gold:#c9a84c;
+--text:#f5f0e8;
+--muted:#8a8070;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'DM Sans',sans-serif;
+}
+
+body{
+background:var(--bg);
+color:var(--text);
+}
+
+/* NAVBAR */
+header{
+position:fixed;
+top:0;
+width:100%;
+padding:20px 6%;
+display:flex;
+justify-content:space-between;
+background:rgba(10,10,15,0.8);
+backdrop-filter:blur(10px);
+z-index:1000;
+}
+
+header a{
+color:var(--gold);
+text-decoration:none;
+font-size:14px;
+letter-spacing:2px;
+}
+
+/* TITLE */
+h2{
+text-align:center;
+margin-top:100px;
+font-family:'Cormorant Garamond';
+font-size:40px;
+color:var(--gold);
+}
+
+/* GRID */
+#productContainer{
+padding:60px 6%;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+gap:40px;
+}
+
+/* CARD */
+.product-card{
+background:rgba(255,255,255,0.03);
+border:1px solid rgba(201,168,76,0.15);
+border-radius:15px;
+padding:20px;
+transition:0.4s;
+backdrop-filter:blur(10px);
+position:relative;
+overflow:hidden;
+}
+
+.product-card:hover{
+transform:translateY(-10px) scale(1.02);
+border-color:var(--gold);
+}
+
+/* TITLE */
+.product-card h3{
+font-family:'Cormorant Garamond';
+font-size:26px;
+margin-bottom:10px;
+}
+
+/* TEXT */
+.product-card p{
+font-size:14px;
+color:var(--muted);
+margin-bottom:6px;
+}
+
+/* PRICE */
+.price{
+color:var(--gold);
+font-size:18px;
+margin:10px 0;
+}
+
+/* IMAGE GRID */
+.image-container{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:8px;
+margin-top:15px;
+}
+
+.image-container img{
+width:100%;
+height:120px;
+object-fit:cover;
+border-radius:8px;
+transition:0.4s;
+}
+
+.image-container img:hover{
+transform:scale(1.1);
+}
+
+/* DESCRIPTION */
+.desc{
+margin-top:15px;
+font-size:13px;
+color:#aaa;
+line-height:1.6;
+}
+
+/* BUTTON */
+.btn{
+margin-top:15px;
+padding:10px 20px;
+border:1px solid var(--gold);
+color:var(--gold);
+background:transparent;
+cursor:pointer;
+transition:0.3s;
+}
+
+.btn:hover{
+background:var(--gold);
+color:#000;
+}
+
+/* FOOTER */
+footer{
+background:#111;
+padding:60px 6%;
+margin-top:50px;
+}
+
+.footer-container{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:30px;
+}
+
+.footer-column h4{
+color:var(--gold);
+margin-bottom:15px;
+font-size:12px;
+letter-spacing:2px;
+}
+
+.footer-column p{
+font-size:13px;
+color:#aaa;
+margin:6px 0;
+cursor:pointer;
+}
+
+.footer-column p:hover{
+color:#fff;
+}
+
+.footer-bottom{
+text-align:center;
+margin-top:40px;
+font-size:12px;
+color:#666;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<a href="index.html">← Back to Home</a>
+</header>
+
+<h2>Our Premium Collection</h2>
+
+<div id="productContainer"></div>
+
+<!-- FOOTER -->
+<footer>
+<div class="footer-container">
+
+<div class="footer-column">
+<h4>ABOUT</h4>
+<p>Contact Us</p>
+<p>About Us</p>
+<p>Careers</p>
+</div>
+
+<div class="footer-column">
+<h4>HELP</h4>
+<p>Payments</p>
+<p>Shipping</p>
+<p>Returns</p>
+</div>
+
+<div class="footer-column">
+<h4>POLICY</h4>
+<p>Terms</p>
+<p>Privacy</p>
+</div>
+
+</div>
+
+<div class="footer-bottom">
+© 2026 KSleep Premium
+</div>
+</footer>
+
+<script>
+
+fetch("http://localhost:1234/fechdata")
+.then(res => res.json())
+.then(data => {
+
+let container = document.getElementById("productContainer");
+let html = "";
+
+data.forEach(product => {
+
+html += `
+<div class="product-card">
+
+<h3>${product.productName}</h3>
+
+<p class="price">₹${product.price}</p>
+
+<p>Material: ${product.material}</p>
+<p>Comfort: ${product.comfortLevel}</p>
+
+<div class="image-container">
+<img src="${product.image1 || ''}">
+<img src="${product.image2 || ''}">
+<img src="${product.image3 || ''}">
+<img src="${product.image4 || ''}">
+</div>
+
+<p class="desc">${product.productDescription || ''}</p>
+
+<button class="btn" onclick="view(${product.id})">View Details</button>
+
+</div>
+`;
+
+});
+
+container.innerHTML = html;
+
+})
+.catch(err => console.log(err));
+
+function view(id){
+window.location.href="fulldeatailprodect.html?id="+id;
+}
+
+</script>
+
+</body>
+</html>

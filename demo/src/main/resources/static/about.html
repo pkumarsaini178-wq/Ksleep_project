@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KSleep — About</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#07070f;--deep:#0e0e1a;--surface:#13131f;--card:#1a1a2a;
+  --gold:#c9a84c;--gold2:#e8c96e;--cream:#f5f0e8;--muted:#6b6575;
+  --glass:rgba(255,255,255,0.04);--glass-border:rgba(201,168,76,0.18);
+}
+body{background:var(--ink);color:var(--cream);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
+
+/* CURSOR */
+#cursor{position:fixed;width:14px;height:14px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width 0.2s,height 0.2s;mix-blend-mode:difference;}
+#cursor-ring{position:fixed;width:40px;height:40px;border-radius:50%;border:1px solid rgba(201,168,76,0.5);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all 0.12s ease;}
+
+/* LOADER */
+#loader{position:fixed;inset:0;z-index:99999;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.8s,visibility 0.8s;}
+#loader.done{opacity:0;visibility:hidden;}
+.loader-logo{font-family:'Cormorant Garamond',serif;font-size:40px;color:var(--gold);letter-spacing:6px;margin-bottom:40px;animation:pulse 1.5s ease-in-out infinite;}
+.loader-bar{width:200px;height:1px;background:rgba(201,168,76,0.2);}
+.loader-fill{height:100%;background:var(--gold);animation:loadFill 1.6s ease forwards;}
+@keyframes loadFill{from{width:0;}to{width:100%;}}
+@keyframes pulse{0%,100%{opacity:0.5;}50%{opacity:1;}}
+
+/* PARTICLES */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;}
+.particle{position:absolute;border-radius:50%;background:var(--gold);opacity:0;animation:floatP var(--dur,8s) var(--delay,0s) infinite ease-in-out;}
+@keyframes floatP{0%{opacity:0;transform:translateY(100vh);}10%{opacity:0.3;}90%{opacity:0.08;}100%{opacity:0;transform:translateY(-10vh) translateX(var(--dx,20px));}}
+
+/* HEADER */
+header{position:fixed;top:0;width:100%;padding:22px 6%;display:flex;justify-content:space-between;align-items:center;z-index:1000;backdrop-filter:blur(20px);background:rgba(7,7,15,0.7);border-bottom:1px solid rgba(201,168,76,0.08);}
+.logo{font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;}
+nav a{color:var(--muted);margin-left:28px;text-decoration:none;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;transition:color 0.3s;position:relative;}
+nav a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--gold);transition:width 0.3s;}
+nav a:hover{color:var(--gold);}
+nav a:hover::after{width:100%;}
+nav a.active{color:var(--gold);}
+
+/* HERO */
+.hero{
+  height:85vh;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.hero-bg{position:absolute;inset:-60px;background:url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1800&q=80') center/cover;opacity:0.14;will-change:transform;}
+.hero-overlay{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(201,168,76,0.05) 0%,transparent 70%);}
+.hero-content{position:relative;z-index:2;text-align:center;padding:0 20px;}
+.hero-eyebrow{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:20px;opacity:0;transform:translateY(20px);animation:fadeUp 1s 0.4s forwards;}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(52px,8vw,96px);font-weight:400;line-height:1.05;color:var(--cream);opacity:0;transform:translateY(40px);animation:fadeUp 1.2s 0.6s forwards;}
+.hero h1 em{font-style:italic;color:var(--gold);}
+.hero-sub{font-size:15px;color:var(--muted);letter-spacing:1.5px;margin-top:24px;opacity:0;animation:fadeUp 1s 1s forwards;}
+.hero-line{width:1px;height:60px;background:linear-gradient(to bottom,var(--gold),transparent);margin:40px auto 0;opacity:0;animation:fadeUp 1s 1.2s forwards;}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+
+/* MARQUEE */
+.marquee-wrap{padding:16px 0;border-top:1px solid var(--glass-border);border-bottom:1px solid var(--glass-border);overflow:hidden;white-space:nowrap;background:rgba(201,168,76,0.02);}
+.marquee-track{display:inline-flex;gap:50px;animation:marquee 28s linear infinite;}
+.marquee-track span{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.marquee-track .dot{color:var(--gold);}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* SECTIONS */
+.section{padding:110px 8%;max-width:1200px;margin:0 auto;}
+
+/* WHO WE ARE */
+.who-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.who-text .tag{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:16px;}
+.who-text h2{font-family:'Cormorant Garamond',serif;font-size:clamp(34px,4vw,52px);font-weight:400;line-height:1.15;margin-bottom:28px;}
+.who-text h2 em{font-style:italic;color:var(--gold);}
+.who-text p{font-size:15px;color:var(--muted);line-height:1.9;margin-bottom:18px;}
+.who-image{position:relative;border-radius:2px;overflow:hidden;height:480px;border:1px solid var(--glass-border);}
+.who-image img{width:100%;height:100%;object-fit:cover;filter:brightness(0.75);transition:transform 0.6s ease,filter 0.5s;}
+.who-image:hover img{transform:scale(1.05);filter:brightness(0.9);}
+.who-image-label{position:absolute;bottom:24px;left:24px;font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--cream);font-style:italic;}
+
+/* HIGHLIGHT BOX */
+.highlight-box{
+  margin-top:60px;padding:40px 44px;
+  border:1px solid var(--glass-border);background:rgba(201,168,76,0.04);
+  position:relative;
+}
+.highlight-box::before{content:'✦';position:absolute;top:-12px;left:40px;background:var(--ink);padding:0 12px;color:var(--gold);font-size:14px;}
+.highlight-box p{font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;line-height:1.7;color:var(--cream);}
+
+/* STATS */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--glass-border);border-bottom:1px solid var(--glass-border);background:var(--deep);}
+.stat{text-align:center;padding:48px 20px;border-right:1px solid var(--glass-border);}
+.stat:last-child{border-right:none;}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:52px;color:var(--gold);line-height:1;}
+.stat-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:8px;}
+
+/* FEATURES */
+.features-section{padding:110px 8%;background:var(--deep);}
+.features-inner{max-width:1200px;margin:0 auto;}
+.section-head{margin-bottom:64px;}
+.section-head .tag{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+.section-head h2{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,4vw,50px);font-weight:400;}
+.section-head h2 em{font-style:italic;color:var(--gold);}
+
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px;}
+.feature-card{
+  padding:44px 36px;background:var(--card);
+  border:1px solid var(--glass-border);
+  position:relative;overflow:hidden;
+  transition:border-color 0.4s,background 0.4s,transform 0.3s;
+  cursor:default;
+}
+.feature-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,0.06),transparent);opacity:0;transition:opacity 0.4s;}
+.feature-card:hover{border-color:rgba(201,168,76,0.4);background:#1e1e2e;transform:translateY(-4px);}
+.feature-card:hover::before{opacity:1;}
+.feat-num{font-family:'Cormorant Garamond',serif;font-size:52px;color:rgba(201,168,76,0.12);line-height:1;margin-bottom:20px;font-weight:400;}
+.feat-icon{font-size:22px;color:var(--gold);margin-bottom:16px;}
+.feat-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--cream);margin-bottom:12px;}
+.feat-desc{font-size:13px;color:var(--muted);line-height:1.8;}
+
+/* VISION */
+.vision-section{padding:110px 8%;}
+.vision-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;}
+.vision-card{padding:48px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.02);position:relative;}
+.vision-card::after{content:'';position:absolute;top:0;left:0;width:40px;height:1px;background:var(--gold);}
+.vision-tag{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:16px;}
+.vision-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;margin-bottom:20px;}
+.vision-text{font-size:14px;color:var(--muted);line-height:1.9;}
+.commit-list{list-style:none;margin-top:8px;}
+.commit-list li{font-size:14px;color:var(--muted);padding:10px 0;border-bottom:1px solid rgba(201,168,76,0.08);display:flex;align-items:center;gap:12px;}
+.commit-list li:last-child{border-bottom:none;}
+.commit-list li span{color:var(--gold);font-size:12px;}
+
+/* PARALLAX BANNER */
+.parallax-banner{height:400px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.parallax-bg{position:absolute;inset:-80px;background:url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&q=80') center/cover;opacity:0.15;will-change:transform;}
+.parallax-content{position:relative;z-index:2;text-align:center;padding:0 20px;}
+.parallax-content h2{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,60px);font-weight:400;}
+.parallax-content h2 em{font-style:italic;color:var(--gold);}
+.parallax-content p{font-size:14px;color:var(--muted);margin-top:14px;letter-spacing:1px;}
+
+/* FOOTER */
+footer{padding:70px 8%;border-top:1px solid var(--glass-border);background:var(--deep);}
+.footer-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;}
+.footer-logo{font-family:'Cormorant Garamond',serif;font-size:28px;letter-spacing:4px;color:var(--gold);}
+.footer-links{display:flex;gap:24px;}
+.footer-links a{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color 0.3s;}
+.footer-links a:hover{color:var(--gold);}
+.footer-copy{font-size:12px;color:var(--muted);letter-spacing:1px;}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(50px);transition:opacity 0.9s ease,transform 0.9s ease;}
+.reveal.active{opacity:1;transform:translateY(0);}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:opacity 0.9s ease,transform 0.9s ease;}
+.reveal-left.active{opacity:1;transform:translateX(0);}
+.reveal-right{opacity:0;transform:translateX(40px);transition:opacity 0.9s ease,transform 0.9s ease;}
+.reveal-right.active{opacity:1;transform:translateX(0);}
+
+@media(max-width:900px){
+  .who-grid,.vision-inner{grid-template-columns:1fr;}
+  .who-image{height:320px;}
+  .stats-bar{grid-template-columns:repeat(2,1fr);}
+  nav{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-logo">KSLEEP</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div class="particles" id="particles"></div>
+
+<header>
+  <div class="logo">K·Sleep</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="openProduct.html">Products</a>
+    <a href="B2b.html">B2B</a>
+    <a href="about.html" class="active">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="admin.html">Admin</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">— Our Story —</p>
+    <h1>About <em>KSleep</em></h1>
+    <p class="hero-sub">Redefining Comfort. Engineering Better Sleep.</p>
+    <div class="hero-line"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span>Premium Quality</span><span class="dot">✦</span>
+    <span>Since 2015</span><span class="dot">✦</span>
+    <span>Engineered Comfort</span><span class="dot">✦</span>
+    <span>India's Best</span><span class="dot">✦</span>
+    <span>Luxury Sleep</span><span class="dot">✦</span>
+    <span>B2B Solutions</span><span class="dot">✦</span>
+    <span>Certified Materials</span><span class="dot">✦</span>
+    <span>Premium Quality</span><span class="dot">✦</span>
+    <span>Since 2015</span><span class="dot">✦</span>
+    <span>Engineered Comfort</span><span class="dot">✦</span>
+    <span>India's Best</span><span class="dot">✦</span>
+    <span>Luxury Sleep</span><span class="dot">✦</span>
+    <span>B2B Solutions</span><span class="dot">✦</span>
+    <span>Certified Materials</span><span class="dot">✦</span>
+  </div>
+</div>
+
+<!-- WHO WE ARE -->
+<section class="section">
+  <div class="who-grid">
+    <div class="who-text">
+      <p class="tag reveal">— Who We Are —</p>
+      <h2 class="reveal">Built for <em>Better Sleep</em><br>Engineered for Life</h2>
+      <p class="reveal">KSleep is a modern mattress brand built with one mission — to deliver scientifically designed comfort systems for both individual customers and large institutions. We combine advanced material technology, ergonomic research, and manufacturing precision.</p>
+      <p class="reveal">From residential bedrooms to luxury hotels and hospitals, KSleep products are engineered for performance, durability, and long-term comfort.</p>
+      <div class="highlight-box reveal">
+        <p>"We are not just selling mattresses. We are building a sleep ecosystem that supports health, recovery, productivity, and lifestyle improvement."</p>
+      </div>
+    </div>
+    <div class="who-image reveal-right">
+      <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=900&q=80" alt="KSleep craftsmanship">
+      <div class="who-image-label">Crafted with care</div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat reveal"><div class="stat-num" data-target="15000">0</div><div class="stat-label">Happy Customers</div></div>
+  <div class="stat reveal"><div class="stat-num" data-target="12">0</div><div class="stat-label">Years of Excellence</div></div>
+  <div class="stat reveal"><div class="stat-num" data-target="98">0</div><div class="stat-label">% Satisfaction</div></div>
+  <div class="stat reveal"><div class="stat-num" data-target="500">0</div><div class="stat-label">Enterprise Clients</div></div>
+</div>
+
+<!-- HOW WE HELP -->
+<section class="features-section">
+  <div class="features-inner">
+    <div class="section-head">
+      <p class="tag reveal">— How We Help —</p>
+      <h2 class="reveal">Everything you need for<br><em>the perfect purchase</em></h2>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card reveal">
+        <div class="feat-num">01</div>
+        <div class="feat-icon">◈</div>
+        <h3 class="feat-title">Easy Product Discovery</h3>
+        <p class="feat-desc">Browse premium collections, filter by price, and explore complete specifications and high-res images at every step.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feat-num">02</div>
+        <div class="feat-icon">◎</div>
+        <h3 class="feat-title">Transparent Pricing</h3>
+        <p class="feat-desc">Clear pricing visibility with zero hidden costs — helping customers make confident, informed purchasing decisions.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feat-num">03</div>
+        <div class="feat-icon">◉</div>
+        <h3 class="feat-title">Enterprise Solutions</h3>
+        <p class="feat-desc">Hotels, hospitals, hostels and developers can request bulk manufacturing quotes directly through our B2B section.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feat-num">04</div>
+        <div class="feat-icon">✦</div>
+        <h3 class="feat-title">Direct Brand Connection</h3>
+        <p class="feat-desc">No middlemen. Connect directly with the manufacturer for better value, faster support, and genuine products.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARALLAX BANNER -->
+<div class="parallax-banner">
+  <div class="parallax-bg" id="parallaxBg"></div>
+  <div class="parallax-content reveal">
+    <h2>Sleep is not a luxury —<br><em>it is a necessity</em></h2>
+    <p>And we treat it that way, every single day.</p>
+  </div>
+</div>
+
+<!-- VISION & COMMITMENT -->
+<section class="vision-section">
+  <div class="vision-inner">
+    <div class="vision-card reveal-left">
+      <p class="vision-tag">— Our Vision —</p>
+      <h3 class="vision-title">India's Most Trusted<br>Sleep Innovation Brand</h3>
+      <p class="vision-text">To become India's most trusted sleep innovation brand by combining comfort engineering with scalable manufacturing excellence — reaching every home, hotel, and hospital across the country.</p>
+    </div>
+    <div class="vision-card reveal-right">
+      <p class="vision-tag">— Our Commitment —</p>
+      <h3 class="vision-title">A Promise We Keep<br>Every Single Day</h3>
+      <ul class="commit-list">
+        <li><span>✦</span> Premium quality materials, always</li>
+        <li><span>✦</span> Precision manufacturing standards</li>
+        <li><span>✦</span> Long-term durability guaranteed</li>
+        <li><span>✦</span> Customer-first service approach</li>
+        <li><span>✦</span> Transparent business practices</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">K·Sleep</div>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="openProduct.html">Products</a>
+      <a href="B2b.html">B2B</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <p class="footer-copy">India's Emerging Premium Sleep Brand &nbsp;·&nbsp; © 2027 KSleep</p>
+  </div>
+</footer>
+
+<script>
+// LOADER
+window.addEventListener('load',()=>{setTimeout(()=>document.getElementById('loader').classList.add('done'),1800);});
+
+// CURSOR
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
+
+// PARTICLES
+const pc=document.getElementById('particles');
+for(let i=0;i<24;i++){
+  const p=document.createElement('div');p.className='particle';
+  const big=Math.random()>0.7;
+  p.style.cssText=`left:${Math.random()*100}%;width:${big?2.5:1.5}px;height:${big?2.5:1.5}px;--dur:${7+Math.random()*12}s;--delay:${Math.random()*10}s;--dx:${(Math.random()-0.5)*70}px;`;
+  pc.appendChild(p);
+}
+
+// PARALLAX
+const heroBg=document.getElementById('heroBg');
+const parallaxBg=document.getElementById('parallaxBg');
+window.addEventListener('scroll',()=>{
+  const s=window.scrollY;
+  heroBg.style.transform=`scale(1.1) translateY(${s*0.15}px)`;
+  if(parallaxBg){
+    const top=parallaxBg.parentElement.getBoundingClientRect().top;
+    parallaxBg.style.transform=`translateY(${-top*0.2}px)`;
+  }
+  revealOnScroll();
+  counterOnScroll();
+},{passive:true});
+
+// SCROLL REVEAL
+function revealOnScroll(){
+  document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el=>{
+    if(el.getBoundingClientRect().top<window.innerHeight-80) el.classList.add('active');
+  });
+}
+revealOnScroll();
+
+// COUNTER
+let counted=false;
+function counterOnScroll(){
+  if(counted)return;
+  const bar=document.querySelector('.stats-bar');
+  if(!bar)return;
+  if(bar.getBoundingClientRect().top<window.innerHeight){
+    counted=true;
+    document.querySelectorAll('.stat-num').forEach(el=>{
+      const target=+el.dataset.target;let start=0;
+      const step=target/60;
+      const timer=setInterval(()=>{
+        start+=step;
+        if(start>=target){el.textContent=target.toLocaleString();clearInterval(timer);}
+        else el.textContent=Math.floor(start).toLocaleString();
+      },25);
+    });
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cancel Order</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f5f5f5;
+margin:0;
+}
+
+.container{
+width:90%;
+max-width:900px;
+margin:40px auto;
+background:white;
+padding:30px;
+border-radius:10px;
+box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+
+h2{
+margin-bottom:25px;
+}
+
+/* PRODUCT BOX */
+
+.product-box{
+display:flex;
+gap:20px;
+border-bottom:1px solid #eee;
+padding-bottom:20px;
+margin-bottom:20px;
+}
+
+.product-box img{
+width:120px;
+height:120px;
+object-fit:cover;
+border-radius:6px;
+}
+
+.product-info{
+flex:1;
+}
+
+.product-name{
+font-size:18px;
+font-weight:bold;
+margin-bottom:6px;
+}
+
+.price{
+color:#e63946;
+font-weight:bold;
+margin-bottom:6px;
+}
+
+.address{
+font-size:14px;
+color:#555;
+}
+
+/* REASON BOX */
+
+.reason-box{
+margin-top:20px;
+}
+
+.reason-box label{
+display:block;
+margin-bottom:10px;
+cursor:pointer;
+}
+
+/* TEXT AREA */
+
+textarea{
+width:100%;
+padding:10px;
+border:1px solid #ccc;
+border-radius:6px;
+margin-top:10px;
+resize:none;
+}
+
+/* BUTTON */
+
+.cancel-btn{
+margin-top:20px;
+padding:12px 25px;
+background:#ff4d4d;
+border:none;
+color:white;
+font-size:16px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.cancel-btn:hover{
+background:#e60023;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Cancel Order</h2>
+
+<!-- PRODUCT DETAILS -->
+
+<div class="product-box">
+
+<img id="productImage">
+
+<div class="product-info">
+
+<div class="product-name" id="productName"></div>
+
+<div class="price" id="productPrice"></div>
+
+<div class="address" id="productAddress"></div>
+
+<div id="orderDate"></div>
+
+</div>
+
+</div>
+
+<!-- CANCEL REASON -->
+
+<div class="reason-box">
+
+<h3>Select Reason for Cancellation</h3>
+
+<label>
+<input type="radio" name="reason" value="Ordered by mistake">
+Ordered by mistake
+</label>
+
+<label>
+<input type="radio" name="reason" value="Found cheaper elsewhere">
+Found cheaper elsewhere
+</label>
+
+<textarea id="comment" placeholder="Additional comment (optional)"></textarea>
+
+</div>
+
+ <a href="index.html"><button class="cancel-btn" onclick="cancelOrder()">
+Confirm Cancel Order
+</button></a>
+
+</div>
+
+<script>
+
+/* GET PRODUCT DATA FROM URL */
+
+let params = new URLSearchParams(window.location.search);
+
+let id = params.get("id");
+let name = params.get("name");
+let price = params.get("price");
+let image = params.get("image");
+let address = params.get("address");
+let date = params.get("date");
+
+
+/* SHOW PRODUCT DETAILS */
+
+document.getElementById("productName").innerText = name;
+
+document.getElementById("productPrice").innerText = "Price : ₹ " + price;
+
+document.getElementById("productAddress").innerText = "Address : " + address;
+
+document.getElementById("orderDate").innerText = "Order Date : " + date;
+
+document.getElementById("productImage").src =
+"http://localhost:1234/images/" + image;
+
+
+/* CANCEL ORDER FUNCTION */
+function cancelOrder(){
+
+let reason = document.querySelector('input[name="reason"]:checked').value;
+let comment = document.getElementById("comment").value;
+
+fetch("http://localhost:1234/cancelOrder?id="+id+"&reason="+reason+"&comment="+comment,{
+method:"POST"
+})
+.then(res=>res.text())
+.then(msg=>{
+alert(msg);
+window.location.href="orderhistory.html";
+});
+
+}
+
+</script>
+
+</body>
+</html>

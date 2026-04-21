@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KSleep — Premium Collection</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+:root {
+  --ink: #0a0a0f;
+  --cream: #f5f0e8;
+  --gold: #c9a84c;
+  --gold-light: #e8cc7a;
+  --muted: #8a8070;
+  --deep: #12101a;
+  --card-bg: #0e0d14;
+  --border: rgba(201,168,76,0.13);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+a { text-decoration: none; color: inherit; }
+
+/* ── CURSOR ── */
+.cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--gold);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  position: fixed;
+  width: 44px; height: 44px;
+  border: 1.5px solid rgba(201,168,76,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s, border-color 0.3s;
+}
+.cursor.hovered { width: 6px; height: 6px; }
+.cursor-ring.hovered { width: 60px; height: 60px; border-color: var(--gold); }
+
+/* ── THREE.JS CANVAS ── */
+#bg-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── GRAIN ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 9997;
+}
+
+/* ── NAVBAR ── */
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 28px 6%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(10,10,15,0.88) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: -1;
+  backdrop-filter: blur(12px);
+}
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px; font-weight: 600;
+  letter-spacing: 4px; color: var(--gold);
+  text-transform: uppercase; position: relative; z-index: 1;
+}
+nav { display: flex; gap: 36px; align-items: center; position: relative; z-index: 1; }
+nav a {
+  font-size: 11px; font-weight: 400;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: rgba(245,240,232,0.65);
+  transition: color 0.3s; position: relative;
+}
+nav a::after {
+  content: ''; position: absolute;
+  bottom: -4px; left: 0;
+  width: 0; height: 1px;
+  background: var(--gold); transition: width 0.3s;
+}
+nav a:hover, nav a.active { color: var(--gold); }
+nav a:hover::after, nav a.active::after { width: 100%; }
+
+/* ── HERO ── */
+.hero {
+  position: relative; height: 72vh;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; overflow: hidden; z-index: 1;
+}
+.hero-img {
+  position: absolute; inset: 0;
+  background: url('https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1800') center/cover no-repeat;
+  will-change: transform;
+}
+.hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(10,10,15,0.45) 0%, rgba(10,10,15,0.55) 60%, rgba(10,10,15,0.98) 100%);
+}
+.hero-content { position: relative; z-index: 2; padding: 0 20px; }
+.hero-eyebrow {
+  font-size: 10px; letter-spacing: 6px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 24px; display: block; opacity: 0;
+}
+.hero h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(42px, 7vw, 90px);
+  font-weight: 300; line-height: 1.05;
+  letter-spacing: -1px; margin-bottom: 24px; opacity: 0;
+}
+.hero h1 em { font-style: italic; color: var(--gold-light); }
+.hero-sub {
+  font-size: 15px; font-weight: 300;
+  color: rgba(245,240,232,0.6);
+  max-width: 520px; margin: 0 auto; line-height: 1.8; opacity: 0;
+}
+
+/* ── FILTER BAR ── */
+.filter-section { position: relative; z-index: 2; padding: 60px 6% 0; }
+.filter-wrap {
+  display: flex; justify-content: center; align-items: center;
+  gap: 16px; flex-wrap: wrap;
+  padding: 28px 40px;
+  border: 1px solid var(--border);
+  background: rgba(14,13,20,0.75);
+  backdrop-filter: blur(16px);
+  border-radius: 4px; position: relative;
+}
+.filter-wrap::before {
+  content: ''; position: absolute;
+  top: 0; left: 40px; right: 40px; height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+}
+.filter-label {
+  font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--gold); white-space: nowrap;
+}
+.search-wrap { position: relative; flex: 1; min-width: 220px; max-width: 380px; }
+.search-icon {
+  position: absolute; left: 18px; top: 50%;
+  transform: translateY(-50%); opacity: 0.4; font-size: 16px; pointer-events: none;
+}
+#searchInput {
+  width: 100%;
+  padding: 14px 20px 14px 46px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 2px;
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; letter-spacing: 0.5px;
+  outline: none; transition: border-color 0.3s;
+}
+#searchInput::placeholder { color: var(--muted); }
+#searchInput:focus { border-color: rgba(201,168,76,0.45); }
+
+#sortSelect {
+  padding: 14px 40px 14px 20px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 2px;
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; letter-spacing: 0.5px;
+  outline: none; cursor: none; transition: border-color 0.3s;
+  min-width: 200px; appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 16px center;
+}
+#sortSelect:focus { border-color: rgba(201,168,76,0.45); }
+#sortSelect option { background: var(--deep); color: var(--cream); }
+
+.results-count {
+  font-size: 11px; letter-spacing: 2px; color: var(--muted);
+  text-transform: uppercase; white-space: nowrap;
+}
+.results-count span { color: var(--gold); font-weight: 500; }
+
+/* ── PRODUCTS SECTION ── */
+.products-section { position: relative; z-index: 2; padding: 60px 6% 120px; }
+
+/* ── LOADING ── */
+.loading-state { text-align: center; padding: 100px 20px; }
+.loader {
+  width: 40px; height: 40px;
+  border: 1px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-state p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--muted); }
+
+/* ── EMPTY ── */
+.empty-state { text-align: center; padding: 100px 20px; display: none; }
+.empty-state h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px; font-weight: 300; color: var(--muted); margin-bottom: 12px;
+}
+.empty-state p { font-size: 13px; color: rgba(138,128,112,0.5); }
+
+/* ── PRODUCT GRID ── */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 28px;
+}
+
+/* ── PRODUCT CARD ── */
+.product-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px; overflow: hidden;
+  position: relative;
+  transition: border-color 0.4s;
+  will-change: transform; cursor: none;
+}
+.product-card:hover { border-color: rgba(201,168,76,0.32); }
+
+.card-img-wrap { position: relative; height: 260px; overflow: hidden; }
+.card-img-wrap img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.product-card:hover .card-img-wrap img { transform: scale(1.07); }
+
+.card-img-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(10,10,15,0.7) 0%, transparent 55%);
+  opacity: 0; transition: opacity 0.4s;
+}
+.product-card:hover .card-img-overlay { opacity: 1; }
+
+.card-badge {
+  position: absolute; top: 16px; left: 16px;
+  padding: 5px 14px;
+  background: rgba(10,10,15,0.82);
+  border: 1px solid var(--border);
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); backdrop-filter: blur(8px);
+}
+
+.card-content { padding: 28px 28px 32px; }
+.card-category {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 10px; display: block;
+}
+.card-content h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 400; color: var(--cream);
+  margin-bottom: 8px; line-height: 1.3;
+}
+.card-divider {
+  width: 30px; height: 1px; background: var(--border);
+  margin: 14px 0; transition: width 0.4s, background 0.4s;
+}
+.product-card:hover .card-divider { width: 50px; background: var(--gold); }
+
+.price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px; font-weight: 300; color: var(--gold-light);
+  margin-bottom: 24px; display: block; line-height: 1;
+}
+.price-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; color: var(--muted); font-style: normal;
+}
+
+.card-btn {
+  display: block; width: 100%;
+  padding: 14px 24px;
+  border: 1px solid rgba(201,168,76,0.35);
+  background: transparent; color: var(--gold);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  cursor: none; transition: color 0.4s, border-color 0.4s;
+  position: relative; overflow: hidden;
+}
+.card-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--gold);
+  transform: translateX(-101%);
+  transition: transform 0.45s cubic-bezier(0.77,0,0.175,1);
+  z-index: 0;
+}
+.card-btn span { position: relative; z-index: 1; }
+.card-btn:hover { color: var(--ink); border-color: var(--gold); }
+.card-btn:hover::before { transform: translateX(0); }
+
+.card-line {
+  position: absolute; bottom: 0; left: 0;
+  width: 0; height: 2px; background: var(--gold);
+  transition: width 0.5s ease;
+}
+.product-card:hover .card-line { width: 100%; }
+
+/* ── FOOTER ── */
+footer { position: relative; z-index: 2; background: var(--deep); padding: 80px 6% 48px; }
+.footer-top {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 60px; margin-bottom: 60px; padding-bottom: 60px;
+  border-bottom: 1px solid var(--border);
+}
+.footer-brand .logo { font-size: 24px; margin-bottom: 18px; display: block; }
+.footer-brand p { font-size: 13px; color: var(--muted); line-height: 1.8; max-width: 240px; }
+.footer-col h4 { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
+.footer-col a { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; transition: color 0.3s; }
+.footer-col a:hover { color: var(--cream); }
+.footer-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: rgba(138,128,112,0.45); }
+
+/* ── SCROLL REVEAL CLASSES ── */
+.reveal { opacity: 0; transform: translateY(36px); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  nav { display: none; }
+  .product-grid { grid-template-columns: 1fr 1fr; }
+  .footer-top { grid-template-columns: 1fr 1fr; gap: 40px; }
+  .filter-wrap { flex-direction: column; align-items: stretch; padding: 24px; }
+  .search-wrap { max-width: 100%; }
+  #sortSelect { min-width: 100%; }
+}
+@media (max-width: 560px) {
+  .product-grid { grid-template-columns: 1fr; }
+  .footer-top { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- THREE.JS CANVAS -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAVBAR -->
+<header id="header">
+  <div class="logo">KSleep</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="openProduct.html" class="active">Products</a>
+    <a href="B2b.html">B2B</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="admin.html">Admin</a>
+    <a href="order.html">Orders</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-img" id="heroImg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <span class="hero-eyebrow">Premium Collection</span>
+    <h1>Explore Our <em>Finest</em><br>Sleep Products</h1>
+    <p class="hero-sub">Crafted with innovation and designed to redefine comfort and healthy living across India.</p>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="filter-section">
+  <div class="filter-wrap reveal">
+    <span class="filter-label">Filter</span>
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="searchInput" placeholder="Search products...">
+    </div>
+    <select id="sortSelect">
+      <option value="">Sort By</option>
+      <option value="low">Price: Low to High</option>
+      <option value="high">Price: High to Low</option>
+    </select>
+    <span class="results-count">Showing <span id="countNum">0</span> products</span>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<section class="products-section">
+  <div class="loading-state" id="loadingState">
+    <div class="loader"></div>
+    <p>Loading Collection</p>
+  </div>
+  <div class="empty-state" id="emptyState">
+    <h3>No Products Found</h3>
+    <p>Try adjusting your search</p>
+  </div>
+  <div class="product-grid" id="productContainer"></div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <span class="logo">KSleep</span>
+      <p>India's emerging premium sleep brand, engineering better rest for healthier lives.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Products</h4>
+      <a href="#">Mattresses</a>
+      <a href="#">Pillows</a>
+      <a href="#">Bedding</a>
+      <a href="#">Accessories</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="about.html">About</a>
+      <a href="B2b.html">B2B</a>
+      <a href="contact.html">Contact</a>
+      <a href="admin.html">Admin</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a href="order.html">Your Orders</a>
+      <a href="#">Returns</a>
+      <a href="#">Warranty</a>
+      <a href="#">Track Order</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2027 KSleep. All Rights Reserved.</span>
+    <span>India's Premium Sleep Brand</span>
+  </div>
+</footer>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ── CURSOR ── */
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursorRing');
+let mx=0, my=0, rx=0, ry=0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx+'px'; cursor.style.top = my+'px';
+});
+(function animRing(){
+  rx += (mx-rx)*0.12; ry += (my-ry)*0.12;
+  ring.style.left = rx+'px'; ring.style.top = ry+'px';
+  requestAnimationFrame(animRing);
+})();
+
+function addHover(sel){
+  document.querySelectorAll(sel).forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ cursor.classList.add('hovered'); ring.classList.add('hovered'); });
+    el.addEventListener('mouseleave',()=>{ cursor.classList.remove('hovered'); ring.classList.remove('hovered'); });
+  });
+}
+addHover('a, button, select, input');
+
+/* ── THREE.JS PARTICLES ── */
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setClearColor(0x000000, 0);
+
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 100);
+  camera.position.z = 5;
+
+  const geo = new THREE.BufferGeometry();
+  const N = 350, pos = new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    pos[i*3]   = (Math.random()-.5)*26;
+    pos[i*3+1] = (Math.random()-.5)*26;
+    pos[i*3+2] = (Math.random()-.5)*14;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  const mat = new THREE.PointsMaterial({ color:0xc9a84c, size:0.022, sizeAttenuation:true, transparent:true, opacity:0.4 });
+  const stars = new THREE.Points(geo, mat);
+  scene.add(stars);
+
+  let msx=0, msy=0, sy=0;
+  document.addEventListener('mousemove', e=>{ msx=(e.clientX/innerWidth-.5)*2; msy=(e.clientY/innerHeight-.5)*2; });
+  window.addEventListener('scroll', ()=>{ sy=scrollY; });
+
+  const clk = new THREE.Clock();
+  (function animate(){
+    requestAnimationFrame(animate);
+    const t = clk.getElapsedTime();
+    stars.rotation.y = t*0.018 + msx*0.07;
+    stars.rotation.x = msy*0.04;
+    stars.position.y = -sy*0.0015;
+    renderer.render(scene, camera);
+  })();
+
+  window.addEventListener('resize',()=>{
+    camera.aspect = innerWidth/innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
+})();
+
+/* ── HERO PARALLAX + ENTRANCE ── */
+gsap.to('#heroImg',{
+  yPercent:28, ease:'none',
+  scrollTrigger:{ trigger:'.hero', start:'top top', end:'bottom top', scrub:true }
+});
+gsap.timeline({ delay:0.2 })
+  .to('.hero-eyebrow',{ opacity:1, y:0, duration:0.9, ease:'power3.out' })
+  .to('.hero h1',     { opacity:1, y:0, duration:1.1, ease:'power3.out' }, '-=0.5')
+  .to('.hero-sub',    { opacity:1, y:0, duration:0.9, ease:'power3.out' }, '-=0.6');
+
+/* ── SCROLL REVEALS ── */
+gsap.utils.toArray('.reveal').forEach(el=>{
+  gsap.fromTo(el,
+    { opacity:0, y:40 },
+    { opacity:1, y:0, duration:1, ease:'power3.out',
+      scrollTrigger:{ trigger:el, start:'top 88%' } }
+  );
+});
+
+/* ── HEADER SCROLL ── */
+ScrollTrigger.create({
+  start:80,
+  onEnter:     ()=> gsap.to('header',{ background:'rgba(10,10,15,0.92)', duration:0.4 }),
+  onLeaveBack: ()=> gsap.to('header',{ background:'transparent',         duration:0.4 })
+});
+
+/* =============================================
+   ORIGINAL BUSINESS LOGIC — 100% PRESERVED
+   ============================================= */
+
+let products = [];
+
+/* Fetch Products */
+fetch("http://localhost:1234/fechdata")
+  .then(res => res.json())
+  .then(data => {
+    products = data;
+    document.getElementById('loadingState').style.display = 'none';
+    renderProducts(products);
+  })
+  .catch(() => {
+    document.getElementById('loadingState').style.display = 'none';
+    renderProducts([]);
+  });
+
+/* Render Products */
+const categories = ['Signature Series','Comfort Collection','Luxury Bedding','Premium Range','Elite Series','Classic Line'];
+
+function renderProducts(data){
+  const container  = document.getElementById('productContainer');
+  const emptyState = document.getElementById('emptyState');
+  document.getElementById('countNum').textContent = data.length;
+
+  container.innerHTML = '';
+
+  if(data.length === 0){
+    emptyState.style.display = 'block';
+    return;
+  }
+  emptyState.style.display = 'none';
+
+  data.forEach((product, i) => {
+    const cat  = categories[i % categories.length];
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <div class="card-img-wrap">
+        <img src="${product.image1}" loading="lazy" alt="${product.productName}"
+             onerror="this.src='https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600'">
+        <div class="card-img-overlay"></div>
+        <span class="card-badge">${cat}</span>
+      </div>
+      <div class="card-content">
+        <span class="card-category">${cat}</span>
+        <h4>${product.productName}</h4>
+        <div class="card-divider"></div>
+        <span class="price">₹${Number(product.price).toLocaleString('en-IN')} <small class="price-sub">incl. taxes</small></span>
+        <button class="card-btn" onclick="checkLogin(${product.id})">
+          <span>View Details</span>
+        </button>
+      </div>
+      <div class="card-line"></div>
+    `;
+    container.appendChild(card);
+
+    /* 3D tilt per card */
+    card.addEventListener('mousemove', e => {
+      const r  = card.getBoundingClientRect();
+      const cx = (e.clientX - r.left) / r.width  - 0.5;
+      const cy = (e.clientY - r.top)  / r.height - 0.5;
+      gsap.to(card,{ rotateY:cx*12, rotateX:-cy*9, transformPerspective:800, z:16, duration:0.4, ease:'power2.out' });
+    });
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card,{ rotateY:0, rotateX:0, z:0, duration:0.6, ease:'power2.out' });
+    });
+
+    /* Scroll reveal per card */
+    gsap.fromTo(card,
+      { opacity:0, scale:0.9, y:30 },
+      { opacity:1, scale:1,   y:0,  duration:0.7, ease:'power3.out', delay:(i%4)*0.1,
+        scrollTrigger:{ trigger:card, start:'top 90%' } }
+    );
+  });
+
+  addHover('.card-btn');
+}
+
+/* LOGIN CHECK — original logic, untouched */
+function checkLogin(id){
+  const loginStatus = localStorage.getItem("userLogin");
+  const loginTime   = localStorage.getItem("loginTime");
+
+  if(loginStatus === "true" && loginTime){
+    const diff       = Date.now() - Number(loginTime);
+    const fifteenDays = 15*24*60*60*1000;
+
+    if(diff < fifteenDays){
+      window.location.href = "fulldeatailprodect.html?id=" + id;
+    } else {
+      localStorage.removeItem("userLogin");
+      localStorage.removeItem("loginTime");
+      window.location.href = "login.html?id=" + id;
+    }
+  } else {
+    window.location.href = "login.html?id=" + id;
+  }
+}
+
+/* SEARCH — original logic */
+document.getElementById("searchInput").addEventListener("input", function(){
+  const value    = this.value.toLowerCase();
+  const filtered = products.filter(p => p.productName.toLowerCase().includes(value));
+  renderProducts(filtered);
+});
+
+/* SORT — original logic */
+document.getElementById("sortSelect").addEventListener("change", function(){
+  const sorted = [...products];
+  if(this.value === "low")  sorted.sort((a,b) => a.price - b.price);
+  if(this.value === "high") sorted.sort((a,b) => b.price - a.price);
+  renderProducts(sorted);
+});
+</script>
+</body>
+</html>

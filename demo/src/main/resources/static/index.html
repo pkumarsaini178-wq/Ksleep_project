@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KSleep — Premium Sleep Brand</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+:root {
+  --ink: #0a0a0f;
+  --cream: #f5f0e8;
+  --gold: #c9a84c;
+  --gold-light: #e8cc7a;
+  --muted: #8a8070;
+  --deep: #12101a;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── CUSTOM CURSOR ── */
+.cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--gold);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s, width 0.3s, height 0.3s, background 0.3s;
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  position: fixed;
+  width: 44px; height: 44px;
+  border: 1.5px solid rgba(201,168,76,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.18s ease-out, width 0.3s, height 0.3s;
+}
+.cursor.hovered { width: 6px; height: 6px; }
+.cursor-ring.hovered { width: 60px; height: 60px; border-color: var(--gold); }
+
+/* ── NAVBAR ── */
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 28px 6%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  mix-blend-mode: normal;
+}
+header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(10,10,15,0.7) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+nav { display: flex; gap: 36px; align-items: center; }
+nav a {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: rgba(245,240,232,0.7);
+  text-decoration: none;
+  transition: color 0.3s;
+  position: relative;
+}
+nav a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 0;
+  width: 0; height: 1px;
+  background: var(--gold);
+  transition: width 0.3s;
+}
+nav a:hover { color: var(--gold); }
+nav a:hover::after { width: 100%; }
+
+/* ── THREE.JS CANVAS ── */
+#bg-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.hero-img {
+  position: absolute;
+  inset: 0;
+  background: url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1800') center/cover no-repeat;
+  transform-origin: center;
+  will-change: transform;
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10,10,15,0.3) 0%,
+    rgba(10,10,15,0.5) 60%,
+    rgba(10,10,15,0.95) 100%
+  );
+}
+
+.hero-content { position: relative; z-index: 2; padding: 0 20px; }
+
+.hero-eyebrow {
+  font-size: 11px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 28px;
+  opacity: 0;
+}
+.hero h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(52px, 8vw, 110px);
+  font-weight: 300;
+  line-height: 1.0;
+  letter-spacing: -1px;
+  margin-bottom: 32px;
+  opacity: 0;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--gold-light);
+}
+.hero-sub {
+  font-size: 16px;
+  font-weight: 300;
+  color: rgba(245,240,232,0.65);
+  max-width: 520px;
+  margin: 0 auto 48px;
+  line-height: 1.8;
+  opacity: 0;
+}
+.btn-hero {
+  display: inline-block;
+  padding: 16px 44px;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.4s, color 0.4s;
+  opacity: 0;
+}
+.btn-hero:hover { background: var(--gold); color: var(--ink); }
+
+.scroll-hint {
+  position: absolute;
+  bottom: 40px; left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  z-index: 2;
+}
+.scroll-hint span {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(245,240,232,0.4);
+}
+.scroll-line {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  animation: scrollAnim 1.8s ease-in-out infinite;
+}
+@keyframes scrollAnim {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  51% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* ── STORY SECTION ── */
+.story {
+  position: relative;
+  z-index: 2;
+  padding: 160px 6%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  overflow: hidden;
+}
+.story-text {}
+.story-label {
+  font-size: 10px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 24px;
+  display: block;
+}
+.story-text h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(38px, 4vw, 58px);
+  font-weight: 300;
+  line-height: 1.15;
+  margin-bottom: 28px;
+}
+.story-text h2 em { font-style: italic; color: var(--gold-light); }
+.story-text p {
+  font-size: 16px;
+  color: var(--muted);
+  line-height: 1.9;
+  margin-bottom: 16px;
+}
+
+.story-visual {
+  position: relative;
+  height: 560px;
+}
+.story-img-wrap {
+  position: absolute;
+  border-radius: 4px;
+  overflow: hidden;
+  will-change: transform;
+}
+.story-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.wrap-1 {
+  top: 0; left: 0;
+  width: 75%; height: 72%;
+  transform: rotate(-2deg);
+}
+.wrap-2 {
+  bottom: 0; right: 0;
+  width: 60%; height: 55%;
+  transform: rotate(1.5deg);
+}
+.gold-line {
+  position: absolute;
+  top: 50%; left: -20px;
+  width: 80px; height: 1px;
+  background: var(--gold);
+  transform: translateY(-50%);
+}
+
+/* ── FEATURES ── */
+.features-section {
+  position: relative;
+  z-index: 2;
+  padding: 120px 6%;
+  background: rgba(20,18,28,0.6);
+  backdrop-filter: blur(2px);
+}
+.section-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+.section-header span {
+  font-size: 10px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: block;
+  margin-bottom: 20px;
+}
+.section-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(36px, 4vw, 54px);
+  font-weight: 300;
+  line-height: 1.2;
+}
+.section-header h2 em { font-style: italic; color: var(--gold-light); }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+.feat-card {
+  padding: 56px 40px;
+  border: 1px solid rgba(201,168,76,0.1);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.4s;
+  background: rgba(10,10,15,0.4);
+  will-change: transform;
+}
+.feat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 30%, rgba(201,168,76,0.05), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.feat-card:hover { border-color: rgba(201,168,76,0.35); }
+.feat-card:hover::before { opacity: 1; }
+
+.feat-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 72px;
+  font-weight: 300;
+  color: rgba(201,168,76,0.12);
+  line-height: 1;
+  margin-bottom: 20px;
+  display: block;
+}
+.feat-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--cream);
+  margin-bottom: 16px;
+}
+.feat-card p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.feat-accent {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 0; height: 2px;
+  background: var(--gold);
+  transition: width 0.5s ease;
+}
+.feat-card:hover .feat-accent { width: 100%; }
+
+/* ── PARALLAX QUOTE ── */
+.parallax-quote {
+  position: relative;
+  z-index: 2;
+  height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-align: center;
+}
+.parallax-bg {
+  position: absolute;
+  inset: -30%;
+  background: url('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600') center/cover no-repeat;
+  will-change: transform;
+}
+.parallax-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(10,10,15,0.85) 0%, rgba(18,16,26,0.75) 100%);
+}
+.quote-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 20px;
+  max-width: 900px;
+}
+.quote-mark {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 160px;
+  line-height: 0.5;
+  color: var(--gold);
+  opacity: 0.2;
+  display: block;
+  margin-bottom: 20px;
+}
+.quote-content blockquote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 4vw, 50px);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--cream);
+}
+.quote-attr {
+  margin-top: 28px;
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+/* ── PRODUCTS STRIP ── */
+.products-section {
+  position: relative;
+  z-index: 2;
+  padding: 140px 6%;
+}
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 60px;
+}
+.prod-card {
+  position: relative;
+  height: 480px;
+  overflow: hidden;
+  border-radius: 4px;
+  cursor: none;
+  will-change: transform;
+}
+.prod-card img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.prod-card:hover img { transform: scale(1.08); }
+.prod-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10,10,15,0.92) 0%, transparent 55%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 36px 32px;
+}
+.prod-tag {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.prod-overlay h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+.prod-overlay p {
+  font-size: 13px;
+  color: rgba(245,240,232,0.55);
+}
+.prod-line {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 0; height: 3px;
+  background: var(--gold);
+  transition: width 0.5s;
+}
+.prod-card:hover .prod-line { width: 100%; }
+
+/* ── STATS ── */
+.stats-section {
+  position: relative;
+  z-index: 2;
+  padding: 100px 6%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  border-top: 1px solid rgba(201,168,76,0.15);
+  border-bottom: 1px solid rgba(201,168,76,0.15);
+}
+.stat-item {
+  text-align: center;
+  padding: 60px 20px;
+  border-right: 1px solid rgba(201,168,76,0.15);
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 64px;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+  display: block;
+}
+.stat-label {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 12px;
+  display: block;
+}
+
+/* ── FOOTER ── */
+footer {
+  position: relative;
+  z-index: 2;
+  background: var(--deep);
+  padding: 100px 6% 60px;
+}
+.footer-top {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 60px;
+  margin-bottom: 80px;
+  padding-bottom: 60px;
+  border-bottom: 1px solid rgba(201,168,76,0.12);
+}
+.footer-brand .logo {
+  font-size: 26px;
+  margin-bottom: 20px;
+  display: block;
+}
+.footer-brand p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 260px;
+}
+.footer-col h4 {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 24px;
+}
+.footer-col a {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 12px;
+  transition: color 0.3s;
+}
+.footer-col a:hover { color: var(--cream); }
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: rgba(138,128,112,0.5);
+}
+
+/* ── 3D TILT LAYER ── */
+.tilt-wrap { transform-style: preserve-3d; }
+
+/* ── GRAIN OVERLAY ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 9997;
+}
+
+/* ── REVEAL ANIMATIONS ── */
+.reveal { opacity: 0; transform: translateY(40px); }
+.reveal-left { opacity: 0; transform: translateX(-50px); }
+.reveal-right { opacity: 0; transform: translateX(50px); }
+.reveal-scale { opacity: 0; transform: scale(0.92); }
+
+@media (max-width: 900px) {
+  .story { grid-template-columns: 1fr; gap: 60px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .products-grid { grid-template-columns: 1fr; }
+  .stats-section { grid-template-columns: 1fr 1fr; }
+  .footer-top { grid-template-columns: 1fr 1fr; gap: 40px; }
+  nav { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- THREE.JS CANVAS -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAVBAR -->
+<header id="header">
+  <div class="logo">KSleep</div>
+  <nav>
+    <a href="#">Home</a>
+    <a href="openProduct.html">Products</a>
+    <a href="B2b.html">B2B</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="admin.html">Admin</a>
+    <a href="order.html">Orders</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-img" id="heroImg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">India's Premier Sleep Brand</p>
+    <h1>Redefining<br>The Way <em>India</em><br>Sleeps</h1>
+    <p class="hero-sub">KSleep is built on innovation, comfort, and trust — delivering premium sleep solutions engineered for healthier lives.</p>
+    <a href="openProduct.html" class="btn-hero">Explore Collection</a>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- STORY -->
+<section class="story" id="story">
+  <div class="story-text">
+    <span class="story-label reveal">Our Story</span>
+    <h2 class="reveal">Crafted for<br><em>Deeper Rest</em></h2>
+    <p class="reveal">KSleep was created with a simple mission — to improve the quality of sleep across India. We believe sleep is not a luxury; it is a necessity.</p>
+    <p class="reveal">Every KSleep product is engineered with precision, premium materials, and advanced comfort technology that adapts to your body and lifestyle.</p>
+  </div>
+  <div class="story-visual reveal-right">
+    <div class="story-img-wrap wrap-1" id="storyImg1">
+      <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800" alt="KSleep Mattress">
+    </div>
+    <div class="story-img-wrap wrap-2" id="storyImg2">
+      <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600" alt="KSleep Bedroom">
+    </div>
+    <div class="gold-line"></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section">
+  <div class="section-header">
+    <span class="reveal">Why KSleep</span>
+    <h2 class="reveal">Engineered for<br><em>Excellence</em></h2>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card reveal-scale">
+      <span class="feat-num">01</span>
+      <h3>Advanced Comfort Technology</h3>
+      <p>Designed with orthopedic support and pressure relief innovation, adapting to every curve of your body.</p>
+      <div class="feat-accent"></div>
+    </div>
+    <div class="feat-card reveal-scale">
+      <span class="feat-num">02</span>
+      <h3>Premium Quality Materials</h3>
+      <p>High-density foam and breathable natural fabrics for long-lasting durability and coolness through the night.</p>
+      <div class="feat-accent"></div>
+    </div>
+    <div class="feat-card reveal-scale">
+      <span class="feat-num">03</span>
+      <h3>Trusted by Thousands</h3>
+      <p>KSleep continues to grow with an ever-expanding base of loyal customers who swear by their restful nights.</p>
+      <div class="feat-accent"></div>
+    </div>
+    <div class="feat-card reveal-scale">
+      <span class="feat-num">04</span>
+      <h3>Ergonomic Design</h3>
+      <p>Every contour is intentional — spine alignment, pressure distribution, and thermal regulation all in one.</p>
+      <div class="feat-accent"></div>
+    </div>
+    <div class="feat-card reveal-scale">
+      <span class="feat-num">05</span>
+      <h3>10-Year Warranty</h3>
+      <p>We stand behind every product. Our decade-long warranty reflects our uncompromising confidence in quality.</p>
+      <div class="feat-accent"></div>
+    </div>
+    <div class="feat-card reveal-scale">
+      <span class="feat-num">06</span>
+      <h3>Free Delivery</h3>
+      <p>White-glove delivery across India. Your new KSleep arrives set up, stress-free, ready for your first night.</p>
+      <div class="feat-accent"></div>
+    </div>
+  </div>
+</section>
+
+<!-- PARALLAX QUOTE -->
+<section class="parallax-quote" id="pq">
+  <div class="parallax-bg" id="parallaxBg"></div>
+  <div class="parallax-overlay"></div>
+  <div class="quote-content">
+    <span class="quote-mark reveal">"</span>
+    <blockquote class="reveal">Because Better Sleep<br>Means A <em>Better Life</em></blockquote>
+    <p class="quote-attr reveal">— The KSleep Promise</p>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="products-section">
+  <div class="section-header">
+    <span class="reveal">Collection</span>
+    <h2 class="reveal">Our <em>Finest</em> Products</h2>
+  </div>
+  <div class="products-grid">
+    <div class="prod-card reveal-scale">
+      <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800" alt="Mattress">
+      <div class="prod-overlay">
+        <span class="prod-tag">Signature Series</span>
+        <h3>Ortho Cloud Mattress</h3>
+        <p>Advanced orthopedic support for deeper sleep</p>
+      </div>
+      <div class="prod-line"></div>
+    </div>
+    <div class="prod-card reveal-scale">
+      <img src="https://images.unsplash.com/photo-1585264550248-1778be3b90e7?w=800" alt="Pillow">
+      <div class="prod-overlay">
+        <span class="prod-tag">Comfort Collection</span>
+        <h3>Memory Foam Pillow</h3>
+        <p>Adaptive neck support engineered for rest</p>
+      </div>
+      <div class="prod-line"></div>
+    </div>
+    <div class="prod-card reveal-scale">
+      <img src="https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800" alt="Bedding">
+      <div class="prod-overlay">
+        <span class="prod-tag">Luxury Bedding</span>
+        <h3>Egyptian Cotton Set</h3>
+        <p>1000-thread count, breathable perfection</p>
+      </div>
+      <div class="prod-line"></div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section">
+  <div class="stat-item">
+    <span class="stat-num" data-target="50000">0</span>
+    <span class="stat-label">Happy Customers</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num" data-target="10">0</span>
+    <span class="stat-label">Year Warranty</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num" data-target="28">0</span>
+    <span class="stat-label">States Delivered</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num" data-target="99">0</span>
+    <span class="stat-label">% Satisfaction Rate</span>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <span class="logo">KSleep</span>
+      <p>India's emerging premium sleep brand, engineering better rest for healthier lives since 2022.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Products</h4>
+      <a href="#">Mattresses</a>
+      <a href="#">Pillows</a>
+      <a href="#">Bedding</a>
+      <a href="#">Accessories</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="about.html">About</a>
+      <a href="B2b.html">B2B</a>
+      <a href="contact.html">Contact</a>
+      <a href="admin.html">Admin</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a href="order.html">Your Orders</a>
+      <a href="#">Returns</a>
+      <a href="#">Warranty</a>
+      <a href="#">Track Order</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2027 KSleep. All Rights Reserved.</span>
+    <span>India's Premium Sleep Brand</span>
+  </div>
+</footer>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// ── CURSOR ──
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+});
+
+const animRing = () => {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px';
+  ring.style.top = ry + 'px';
+  requestAnimationFrame(animRing);
+};
+animRing();
+
+document.querySelectorAll('a, button, .feat-card, .prod-card').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.classList.add('hovered'); ring.classList.add('hovered'); });
+  el.addEventListener('mouseleave', () => { cursor.classList.remove('hovered'); ring.classList.remove('hovered'); });
+});
+
+// ── THREE.JS PARTICLES ──
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.z = 5;
+
+  // Floating particles
+  const geo = new THREE.BufferGeometry();
+  const count = 400;
+  const pos = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    pos[i * 3]     = (Math.random() - 0.5) * 24;
+    pos[i * 3 + 1] = (Math.random() - 0.5) * 24;
+    pos[i * 3 + 2] = (Math.random() - 0.5) * 14;
+    sizes[i] = Math.random() * 3 + 0.5;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  const mat = new THREE.PointsMaterial({
+    color: 0xc9a84c,
+    size: 0.025,
+    sizeAttenuation: true,
+    transparent: true,
+    opacity: 0.45,
+  });
+
+  const stars = new THREE.Points(geo, mat);
+  scene.add(stars);
+
+  let mouseX = 0, mouseY = 0;
+  document.addEventListener('mousemove', e => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  let scrollY = 0;
+  window.addEventListener('scroll', () => { scrollY = window.scrollY; });
+
+  const clock = new THREE.Clock();
+  const animate = () => {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    stars.rotation.y = t * 0.02 + mouseX * 0.08;
+    stars.rotation.x = mouseY * 0.04;
+    stars.position.y = -scrollY * 0.002;
+    renderer.render(scene, camera);
+  };
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+
+// ── HERO PARALLAX ──
+gsap.to('#heroImg', {
+  yPercent: 30,
+  ease: 'none',
+  scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true }
+});
+
+// ── HERO ENTRANCE ──
+const heroTl = gsap.timeline({ delay: 0.3 });
+heroTl
+  .to('.hero-eyebrow', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' })
+  .to('.hero h1', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, '-=0.6')
+  .to('.hero-sub', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, '-=0.8')
+  .to('.btn-hero', { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.6')
+  .to('.scroll-hint', { opacity: 1, duration: 1 }, '-=0.3');
+
+// ── SCROLL REVEALS ──
+gsap.utils.toArray('.reveal').forEach(el => {
+  gsap.fromTo(el,
+    { opacity: 0, y: 50 },
+    { opacity: 1, y: 0, duration: 1, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' }
+    }
+  );
+});
+gsap.utils.toArray('.reveal-left').forEach(el => {
+  gsap.fromTo(el,
+    { opacity: 0, x: -60 },
+    { opacity: 1, x: 0, duration: 1.1, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 85%' }
+    }
+  );
+});
+gsap.utils.toArray('.reveal-right').forEach(el => {
+  gsap.fromTo(el,
+    { opacity: 0, x: 60 },
+    { opacity: 1, x: 0, duration: 1.1, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 85%' }
+    }
+  );
+});
+gsap.utils.toArray('.reveal-scale').forEach((el, i) => {
+  gsap.fromTo(el,
+    { opacity: 0, scale: 0.88, y: 30 },
+    { opacity: 1, scale: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: (i % 3) * 0.12,
+      scrollTrigger: { trigger: el, start: 'top 88%' }
+    }
+  );
+});
+
+// ── STORY IMAGES PARALLAX ──
+gsap.to('#storyImg1', {
+  yPercent: -10,
+  ease: 'none',
+  scrollTrigger: { trigger: '.story', start: 'top bottom', end: 'bottom top', scrub: 1 }
+});
+gsap.to('#storyImg2', {
+  yPercent: 12,
+  ease: 'none',
+  scrollTrigger: { trigger: '.story', start: 'top bottom', end: 'bottom top', scrub: 1 }
+});
+
+// ── PARALLAX QUOTE BG ──
+gsap.to('#parallaxBg', {
+  yPercent: 18,
+  ease: 'none',
+  scrollTrigger: { trigger: '#pq', start: 'top bottom', end: 'bottom top', scrub: true }
+});
+
+// ── PRODUCT CARDS 3D HOVER ──
+document.querySelectorAll('.prod-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const cx = (e.clientX - r.left) / r.width - 0.5;
+    const cy = (e.clientY - r.top) / r.height - 0.5;
+    gsap.to(card, { rotateY: cx * 14, rotateX: -cy * 10, transformPerspective: 800, duration: 0.4, ease: 'power2.out' });
+  });
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, { rotateY: 0, rotateX: 0, duration: 0.6, ease: 'power2.out' });
+  });
+});
+
+// ── FEATURE CARDS 3D HOVER ──
+document.querySelectorAll('.feat-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const cx = (e.clientX - r.left) / r.width - 0.5;
+    const cy = (e.clientY - r.top) / r.height - 0.5;
+    gsap.to(card, { rotateY: cx * 10, rotateX: -cy * 8, transformPerspective: 700, z: 20, duration: 0.4, ease: 'power2.out' });
+  });
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, { rotateY: 0, rotateX: 0, z: 0, duration: 0.6, ease: 'power2.out' });
+  });
+});
+
+// ── COUNTER ANIMATION ──
+document.querySelectorAll('.stat-num').forEach(el => {
+  const target = +el.dataset.target;
+  ScrollTrigger.create({
+    trigger: el,
+    start: 'top 85%',
+    onEnter: () => {
+      gsap.to({ val: 0 }, {
+        val: target,
+        duration: 2.5,
+        ease: 'power2.out',
+        onUpdate: function() {
+          el.textContent = Math.round(this.targets()[0].val).toLocaleString('en-IN');
+        }
+      });
+    }
+  });
+});
+
+// ── HEADER SCROLL ──
+ScrollTrigger.create({
+  start: 80,
+  onEnter: () => gsap.to('header', { backdropFilter: 'blur(20px)', background: 'rgba(10,10,15,0.85)', duration: 0.4 }),
+  onLeaveBack: () => gsap.to('header', { backdropFilter: 'blur(10px)', background: 'rgba(10,10,15,0)', duration: 0.4 })
+});
+</script>
+</body>
+</html>
