@@ -337,7 +337,7 @@
                 <tbody>
                     <tr th:each="prod : ${products}">
                         <td>
-                            <img th:src="${prod.image1 != null ? 'http://localhost:1234/images/' + prod.image1 : '/images/default.jpg'}" class="prod-img">
+                            <img th:src="${prod.image1 != null ? '/images/' + prod.image1 : '/images/default.jpg'}" class="prod-img">
                         </td>
                         <td th:text="${prod.productName}">Product Name</td>
                         <td th:text="'₹' + ${#numbers.formatDecimal(prod.price, 1, 'COMMA', 2, 'POINT')}">₹0.00</td>
@@ -369,7 +369,7 @@
         <div class="modal-content">
             <span class="modal-close" onclick="closeModal('addModal')">&times;</span>
             <h2 class="modal-title">Add New Product</h2>
-            <form th:action="@{/insertproductdata}" method="POST" enctype="multipart/form-data">
+            <form th:action="@{/insertproductdata}" method="POST" enctype="multipart/form-data" onsubmit="return validateAddForm(this);">
                 <div class="form-group">
                     <label class="form-label">Product Name</label>
                     <input type="text" name="productName" required>
@@ -395,13 +395,28 @@
                     <textarea name="description" rows="3" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Upload Product Images (Choose 5)</label>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                        <input type="file" name="image1" accept="image/*" required>
-                        <input type="file" name="image2" accept="image/*" required>
-                        <input type="file" name="image3" accept="image/*" required>
-                        <input type="file" name="image4" accept="image/*" required>
-                        <input type="file" name="image5" accept="image/*" required>
+                    <label class="form-label">Product Images (Upload File OR Paste URL)</label>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                            <input type="file" name="image1" accept="image/*">
+                            <input type="text" name="imageUrl1" placeholder="Or paste Image 1 URL">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                            <input type="file" name="image2" accept="image/*">
+                            <input type="text" name="imageUrl2" placeholder="Or paste Image 2 URL">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                            <input type="file" name="image3" accept="image/*">
+                            <input type="text" name="imageUrl3" placeholder="Or paste Image 3 URL">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                            <input type="file" name="image4" accept="image/*">
+                            <input type="text" name="imageUrl4" placeholder="Or paste Image 4 URL">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                            <input type="file" name="image5" accept="image/*">
+                            <input type="text" name="imageUrl5" placeholder="Or paste Image 5 URL">
+                        </div>
                     </div>
                 </div>
                 <button type="submit" class="form-submit">Insert Product</button>
@@ -441,13 +456,28 @@
                     <textarea name="description" id="edit-desc" rows="3" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Update Images (Optional)</label>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                        <input type="file" name="image1" accept="image/*">
-                        <input type="file" name="image2" accept="image/*">
-                        <input type="file" name="image3" accept="image/*">
-                        <input type="file" name="image4" accept="image/*">
-                        <input type="file" name="image5" accept="image/*">
+                    <label class="form-label">Update Images (Optional - Upload File OR Paste URL)</label>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                            <input type="file" name="image1" accept="image/*">
+                            <input type="text" name="imageUrl1" placeholder="Or update Image 1 URL">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                            <input type="file" name="image2" accept="image/*">
+                            <input type="text" name="imageUrl2" placeholder="Or update Image 2 URL">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                            <input type="file" name="image3" accept="image/*">
+                            <input type="text" name="imageUrl3" placeholder="Or update Image 3 URL">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                            <input type="file" name="image4" accept="image/*">
+                            <input type="text" name="imageUrl4" placeholder="Or update Image 4 URL">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                            <input type="file" name="image5" accept="image/*">
+                            <input type="text" name="imageUrl5" placeholder="Or update Image 5 URL">
+                        </div>
                     </div>
                 </div>
                 <button type="submit" class="form-submit">Update Product</button>
@@ -458,6 +488,18 @@
     <script>
         function openAddModal() {
             document.getElementById('addModal').style.display = 'flex';
+        }
+
+        function validateAddForm(form) {
+            for (let i = 1; i <= 5; i++) {
+                const fileInput = form.querySelector(`input[name="image${i}"]`);
+                const urlInput = form.querySelector(`input[name="imageUrl${i}"]`);
+                if ((!fileInput.files || fileInput.files.length === 0) && !urlInput.value.trim()) {
+                    alert('Please provide either an image file or an image URL for Image ' + i + '!');
+                    return false;
+                }
+            }
+            return true;
         }
 
         function openEditModal(button) {

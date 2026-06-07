@@ -325,7 +325,7 @@ function loadProduct(product) {
 }
 
 if(urlId) {
-  fetch(`http://localhost:1234/fechdata/${urlId}`)
+  fetch(`/fechdata/${urlId}`)
     .then(r => r.json())
     .then(product => {
       localStorage.setItem("userLogin", "true");

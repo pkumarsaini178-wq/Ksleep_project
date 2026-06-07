@@ -248,7 +248,7 @@
                         <td th:text="'#' + ${order.id}">#1</td>
                         <td>
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <img th:src="${order.image != null ? (order.image.startsWith('http') ? order.image : 'http://localhost:1234/images/' + order.image) : '/images/default.jpg'}" class="order-img">
+                                <img th:src="${order.image != null ? (order.image.startsWith('http') ? order.image : '/images/' + order.image) : '/images/default.jpg'}" class="order-img">
                                 <span th:text="${order.productName}">Product Name</span>
                             </div>
                         </td>

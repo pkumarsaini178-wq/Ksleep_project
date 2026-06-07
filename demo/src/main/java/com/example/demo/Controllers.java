@@ -1,7 +1,10 @@
 package com.example.demo;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -11,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
@@ -46,7 +50,8 @@ public class Controllers {
     @Autowired
     JavaMailSender emailsender;
 
-    public static final String UPLOAD_DIR = "C:/Users/pankaj kumar saini/Documents/Ecommerce/images/";
+    @Value("${project.image}")
+    private String uploadDir;
 
     @PostConstruct
     public void initAdmin() {
@@ -136,26 +141,25 @@ public class Controllers {
             @RequestParam String material,
             @RequestParam String comfort,
             @RequestParam String description,
-            @RequestParam("image1") MultipartFile file1,
-            @RequestParam("image2") MultipartFile file2,
-            @RequestParam("image3") MultipartFile file3,
-            @RequestParam("image4") MultipartFile file4,
-            @RequestParam("image5") MultipartFile file5,
+            @RequestParam(value = "image1", required = false) MultipartFile file1,
+            @RequestParam(value = "image2", required = false) MultipartFile file2,
+            @RequestParam(value = "image3", required = false) MultipartFile file3,
+            @RequestParam(value = "image4", required = false) MultipartFile file4,
+            @RequestParam(value = "image5", required = false) MultipartFile file5,
+            @RequestParam(value = "imageUrl1", required = false) String imageUrl1,
+            @RequestParam(value = "imageUrl2", required = false) String imageUrl2,
+            @RequestParam(value = "imageUrl3", required = false) String imageUrl3,
+            @RequestParam(value = "imageUrl4", required = false) String imageUrl4,
+            @RequestParam(value = "imageUrl5", required = false) String imageUrl5,
             HttpSession session) throws IOException {
 
-        Files.createDirectories(Paths.get(UPLOAD_DIR));
+        Files.createDirectories(Paths.get(uploadDir));
 
-        String img1Name = UUID.randomUUID() + "_" + file1.getOriginalFilename();
-        String img2Name = UUID.randomUUID() + "_" + file2.getOriginalFilename();
-        String img3Name = UUID.randomUUID() + "_" + file3.getOriginalFilename();
-        String img4Name = UUID.randomUUID() + "_" + file4.getOriginalFilename();
-        String img5Name = UUID.randomUUID() + "_" + file5.getOriginalFilename();
-
-        file1.transferTo(Paths.get(UPLOAD_DIR + img1Name));
-        file2.transferTo(Paths.get(UPLOAD_DIR + img2Name));
-        file3.transferTo(Paths.get(UPLOAD_DIR + img3Name));
-        file4.transferTo(Paths.get(UPLOAD_DIR + img4Name));
-        file5.transferTo(Paths.get(UPLOAD_DIR + img5Name));
+        String img1Name = processImageInput(file1, imageUrl1);
+        String img2Name = processImageInput(file2, imageUrl2);
+        String img3Name = processImageInput(file3, imageUrl3);
+        String img4Name = processImageInput(file4, imageUrl4);
+        String img5Name = processImageInput(file5, imageUrl5);
 
         prodectentity pe = new prodectentity();
         pe.setProductName(productName);
@@ -164,11 +168,11 @@ public class Controllers {
         pe.setComfortLevel(comfort);
         pe.setProductDescription(description);
 
-        pe.setImage1(img1Name);
-        pe.setImage2(img2Name);
-        pe.setImage3(img3Name);
-        pe.setImage4(img4Name);
-        pe.setImage5(img5Name);
+        if (img1Name != null) pe.setImage1(img1Name);
+        if (img2Name != null) pe.setImage2(img2Name);
+        if (img3Name != null) pe.setImage3(img3Name);
+        if (img4Name != null) pe.setImage4(img4Name);
+        if (img5Name != null) pe.setImage5(img5Name);
 
         pr.save(pe);
 
@@ -190,15 +194,15 @@ public class Controllers {
         return pr.findAll().stream().map(product -> {
 
             if (product.getImage1() != null)
-                product.setImage1("http://localhost:1234/images/" + product.getImage1());
+                product.setImage1("/images/" + product.getImage1());
             if (product.getImage2() != null)
-                product.setImage2("http://localhost:1234/images/" + product.getImage2());
+                product.setImage2("/images/" + product.getImage2());
             if (product.getImage3() != null)
-                product.setImage3("http://localhost:1234/images/" + product.getImage3());
+                product.setImage3("/images/" + product.getImage3());
             if (product.getImage4() != null)
-                product.setImage4("http://localhost:1234/images/" + product.getImage4());
+                product.setImage4("/images/" + product.getImage4());
             if (product.getImage5() != null)
-                product.setImage5("http://localhost:1234/images/" + product.getImage5());
+                product.setImage5("/images/" + product.getImage5());
 
             return product;
 
@@ -212,11 +216,11 @@ public class Controllers {
         prodectentity product = pr.findById(id).orElse(null);
 
         if (product != null) {
-            product.setImage1("http://localhost:1234/images/" + product.getImage1());
-            product.setImage2("http://localhost:1234/images/" + product.getImage2());
-            product.setImage3("http://localhost:1234/images/" + product.getImage3());
-            product.setImage4("http://localhost:1234/images/" + product.getImage4());
-            product.setImage5("http://localhost:1234/images/" + product.getImage5());
+            product.setImage1("/images/" + product.getImage1());
+            product.setImage2("/images/" + product.getImage2());
+            product.setImage3("/images/" + product.getImage3());
+            product.setImage4("/images/" + product.getImage4());
+            product.setImage5("/images/" + product.getImage5());
         }
 
         return product;
@@ -228,7 +232,7 @@ public class Controllers {
     @GetMapping("/images/{imageName}")
     public ResponseEntity<Resource> getImage(@PathVariable String imageName) throws IOException {
 
-        Path imagePath = Paths.get(UPLOAD_DIR).resolve(imageName);
+        Path imagePath = Paths.get(uploadDir).resolve(imageName);
         Resource resource = new UrlResource(imagePath.toUri());
 
         if (!resource.exists() || !resource.isReadable()) {
@@ -668,7 +672,12 @@ public class Controllers {
             @RequestParam(value = "image2", required = false) MultipartFile file2,
             @RequestParam(value = "image3", required = false) MultipartFile file3,
             @RequestParam(value = "image4", required = false) MultipartFile file4,
-            @RequestParam(value = "image5", required = false) MultipartFile file5) throws IOException {
+            @RequestParam(value = "image5", required = false) MultipartFile file5,
+            @RequestParam(value = "imageUrl1", required = false) String imageUrl1,
+            @RequestParam(value = "imageUrl2", required = false) String imageUrl2,
+            @RequestParam(value = "imageUrl3", required = false) String imageUrl3,
+            @RequestParam(value = "imageUrl4", required = false) String imageUrl4,
+            @RequestParam(value = "imageUrl5", required = false) String imageUrl5) throws IOException {
 
         prodectentity pe = pr.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid product Id:" + id));
         pe.setProductName(productName);
@@ -677,33 +686,22 @@ public class Controllers {
         pe.setComfortLevel(comfort);
         pe.setProductDescription(description);
 
-        Files.createDirectories(Paths.get(UPLOAD_DIR));
+        Files.createDirectories(Paths.get(uploadDir));
 
-        if (file1 != null && !file1.isEmpty()) {
-            String imgName = UUID.randomUUID() + "_" + file1.getOriginalFilename();
-            file1.transferTo(Paths.get(UPLOAD_DIR + imgName));
-            pe.setImage1(imgName);
-        }
-        if (file2 != null && !file2.isEmpty()) {
-            String imgName = UUID.randomUUID() + "_" + file2.getOriginalFilename();
-            file2.transferTo(Paths.get(UPLOAD_DIR + imgName));
-            pe.setImage2(imgName);
-        }
-        if (file3 != null && !file3.isEmpty()) {
-            String imgName = UUID.randomUUID() + "_" + file3.getOriginalFilename();
-            file3.transferTo(Paths.get(UPLOAD_DIR + imgName));
-            pe.setImage3(imgName);
-        }
-        if (file4 != null && !file4.isEmpty()) {
-            String imgName = UUID.randomUUID() + "_" + file4.getOriginalFilename();
-            file4.transferTo(Paths.get(UPLOAD_DIR + imgName));
-            pe.setImage4(imgName);
-        }
-        if (file5 != null && !file5.isEmpty()) {
-            String imgName = UUID.randomUUID() + "_" + file5.getOriginalFilename();
-            file5.transferTo(Paths.get(UPLOAD_DIR + imgName));
-            pe.setImage5(imgName);
-        }
+        String img1Name = processImageInput(file1, imageUrl1);
+        if (img1Name != null) pe.setImage1(img1Name);
+
+        String img2Name = processImageInput(file2, imageUrl2);
+        if (img2Name != null) pe.setImage2(img2Name);
+
+        String img3Name = processImageInput(file3, imageUrl3);
+        if (img3Name != null) pe.setImage3(img3Name);
+
+        String img4Name = processImageInput(file4, imageUrl4);
+        if (img4Name != null) pe.setImage4(img4Name);
+
+        String img5Name = processImageInput(file5, imageUrl5);
+        if (img5Name != null) pe.setImage5(img5Name);
 
         pr.save(pe);
         return "redirect:/admin/products";
@@ -789,5 +787,45 @@ public class Controllers {
                     m.put("revenue", entry.getValue());
                     return m;
                 }).toList();
+    }
+
+    private String processImageInput(MultipartFile file, String imageUrl) throws IOException {
+        if (file != null && !file.isEmpty()) {
+            String imgName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            file.transferTo(Paths.get(uploadDir + imgName));
+            return imgName;
+        } else if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            return saveImageFromUrl(imageUrl);
+        }
+        return null;
+    }
+
+    private String saveImageFromUrl(String urlString) {
+        try {
+            if (urlString == null || urlString.trim().isEmpty()) {
+                return null;
+            }
+            URL url = new URL(urlString);
+            String extension = ".jpg";
+            
+            String path = url.getPath();
+            if (path.contains(".")) {
+                String ext = path.substring(path.lastIndexOf(".")).toLowerCase();
+                if (ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".png") || ext.equals(".gif") || ext.equals(".webp")) {
+                    extension = ext;
+                }
+            }
+            
+            String imgName = UUID.randomUUID() + extension;
+            Files.createDirectories(Paths.get(uploadDir));
+            
+            try (InputStream in = url.openStream()) {
+                Files.copy(in, Paths.get(uploadDir + imgName), StandardCopyOption.REPLACE_EXISTING);
+            }
+            return imgName;
+        } catch (Exception e) {
+            System.out.println("Error downloading image from URL: " + e.getMessage());
+            return null;
+        }
     }
 }

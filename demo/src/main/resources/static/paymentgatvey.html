@@ -336,7 +336,7 @@ header {
       <div class="card-title">Scan & Pay <span>PhonePe / GPay / UPI</span></div>
       <div class="qr-section">
         <p class="qr-label">Scan QR Code</p>
-        <img src="http://localhost:1234/images/QRcode.jpeg"
+        <img src="/images/QRcode.jpeg"
              alt="Payment QR"
              onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=KSleep-Payment'">
         <p class="qr-note" id="qrNote">Pay ₹— for your KSleep order</p>
@@ -388,7 +388,7 @@ window.onload = function() {
 
   // ✅ Fetch image from backend (same as your original logic)
   if(id) {
-    fetch(`http://localhost:1234/fechdata/${id}`)
+    fetch(`/fechdata/${id}`)
       .then(res => res.json())
       .then(product => {
         const img = product.image1 || image;
@@ -423,7 +423,7 @@ window.onload = function() {
   const email = params.get('email') || '';
   if (email) {
     document.querySelector('input[name="email"]').value = email;
-    fetch(`http://localhost:1234/getUserName?email=${encodeURIComponent(email)}`)
+    fetch(`/getUserName?email=${encodeURIComponent(email)}`)
       .then(res => res.text())
       .then(fetchedName => {
         if (fetchedName) {

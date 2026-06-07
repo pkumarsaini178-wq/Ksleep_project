@@ -238,7 +238,7 @@ function escapeHTML(str) {
     .replace(/'/g, '&#39;');
 }
 
-fetch("http://localhost:1234/fechdata")
+fetch("/fechdata")
 .then(res => res.json())
 .then(data => {
 

@@ -184,7 +184,7 @@ document.getElementById("productAddress").innerText = "Address : " + address;
 document.getElementById("orderDate").innerText = "Order Date : " + date;
 
 document.getElementById("productImage").src =
-"http://localhost:1234/images/" + image;
+"/images/" + image;
 
 
 function getCookie(name) {
@@ -206,7 +206,7 @@ let comment = document.getElementById("comment").value;
 
 const csrfToken = getCookie("XSRF-TOKEN");
 
-fetch("http://localhost:1234/cancelOrder?id="+id+"&reason="+reason+"&comment="+comment,{
+fetch("/cancelOrder?id="+id+"&reason="+reason+"&comment="+comment,{
 method:"POST",
 headers: {
   "X-XSRF-TOKEN": csrfToken || ""
