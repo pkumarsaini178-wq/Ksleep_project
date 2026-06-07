@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>KSleep Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --ink: #07070f;
+            --deep: #0e0e1a;
+            --surface: #13131f;
+            --card: #1a1a2a;
+            --gold: #c9a84c;
+            --gold2: #e8c96e;
+            --cream: #f5f0e8;
+            --muted: #8a8070;
+            --accent: #ff6a00;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(201, 168, 76, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        body {
+            background: var(--ink);
+            color: var(--cream);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: var(--deep);
+            border-right: 1px solid var(--glass-border);
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            color: var(--gold);
+            letter-spacing: 4px;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .menu-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: var(--cream);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background: var(--glass);
+            border-color: var(--glass-border);
+            color: var(--gold);
+            transform: translateX(4px);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .logout-btn:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 50px 60px;
+            background: radial-gradient(circle at top right, rgba(201, 168, 76, 0.03), transparent);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 40px;
+            font-weight: 500;
+            color: var(--cream);
+        }
+
+        .title em {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        /* METRIC CARDS */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--gold);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .metric-title {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 15px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 40px;
+            background: var(--gold);
+            transition: width 0.3s;
+        }
+
+        .metric-card:hover::after {
+            width: 100%;
+        }
+
+        /* CHARTS SECTION */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .chart-card {
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        .chart-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            color: var(--cream);
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 12px;
+        }
+
+        /* RECENT ORDERS TABLE */
+        .table-card {
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 16px 20px;
+            font-size: 14px;
+        }
+
+        th {
+            background: var(--deep);
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 11px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        tr:hover td {
+            background: rgba(201, 168, 76, 0.02);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .status-confirmed { background: rgba(201, 168, 76, 0.15); color: var(--gold2); }
+        .status-shipped { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .status-delivered { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .status-cancelled { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+        .btn-action {
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.3s;
+        }
+
+        .btn-action:hover {
+            color: var(--cream);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-logo">KSLEEP</div>
+        <ul class="menu-list">
+            <li><a href="/admin/dashboard" class="menu-link active">◈ Dashboard</a></li>
+            <li><a href="/admin/products" class="menu-link">◈ Products</a></li>
+            <li><a href="/admin/orders" class="menu-link">◈ Customer Purchases</a></li>
+            <li><a href="/admin/customers" class="menu-link">◈ Customer Profiles</a></li>
+            <li><a href="/admin/analytics" class="menu-link">◈ Sales Analytics</a></li>
+            <li><a href="/admin/reports" class="menu-link">◈ Reports & Stats</a></li>
+            <li><a href="/login.html" class="menu-link logout-btn" onclick="document.cookie='jwt=; Max-Age=0; path=/;';">Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="title">Admin <em>Dashboard</em></h1>
+            <p>Welcome back, Admin</p>
+        </div>
+
+        <!-- METRICS -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-title">Total Customers</div>
+                <div class="metric-value" th:text="${totalCustomers}">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Total Orders</div>
+                <div class="metric-value" th:text="${totalOrders}">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Total Revenue</div>
+                <div class="metric-value" th:text="'₹' + ${#numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">₹0.00</div>
+            </div>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h2 class="chart-title">Monthly Sales Performance</h2>
+                <div style="height: 300px;"><canvas id="monthlySalesChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h2 class="chart-title">Most Purchased Products</h2>
+                <div style="height: 300px;"><canvas id="popularProductsChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- RECENT ORDERS -->
+        <div class="table-card">
+            <h2 class="chart-title">Recent Customer Orders</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="order : ${recentOrders}">
+                        <td th:text="${order.id}">1</td>
+                        <td th:text="${order.customerName}">Customer</td>
+                        <td th:text="${order.productName}">Product</td>
+                        <td th:text="${order.quantity}">1</td>
+                        <td th:text="'₹' + ${#numbers.formatDecimal(order.price * order.quantity, 1, 'COMMA', 2, 'POINT')}">₹0.00</td>
+                        <td>
+                            <span th:class="'status-badge status-' + ${#strings.toLowerCase(order.status)}" 
+                                  th:text="${order.status}">Confirmed</span>
+                        </td>
+                        <td><a href="/admin/orders" class="btn-action">Manage</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- CHARTS JS SCRIPT -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Load Analytics Data from APIs
+            fetch('/admin/api/analytics/monthly-sales')
+                .then(res => res.json())
+                .then(data => {
+                    const months = data.map(item => item.month);
+                    const revenues = data.map(item => item.revenue);
+
+                    new Chart(document.getElementById('monthlySalesChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: months.length > 0 ? months : ['No Data'],
+                            datasets: [{
+                                label: 'Monthly Revenue (₹)',
+                                data: revenues.length > 0 ? revenues : [0],
+                                backgroundColor: 'rgba(201, 168, 76, 0.6)',
+                                borderColor: '#c9a84c',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                    ticks: { color: '#f5f0e8' }
+                                },
+                                x: {
+                                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                    ticks: { color: '#f5f0e8' }
+                                }
+                            },
+                            plugins: {
+                                legend: { labels: { color: '#f5f0e8' } }
+                            }
+                        }
+                    });
+                });
+
+            fetch('/admin/api/analytics/summary')
+                .then(res => res.json())
+                .then(data => {
+                    const topProducts = data.mostPurchasedProducts;
+                    const labels = topProducts.map(p => p.productName);
+                    const quantities = topProducts.map(p => p.quantity);
+
+                    new Chart(document.getElementById('popularProductsChart'), {
+                        type: 'pie',
+                        data: {
+                            labels: labels.length > 0 ? labels : ['No Data'],
+                            datasets: [{
+                                data: quantities.length > 0 ? quantities : [1],
+                                backgroundColor: [
+                                    'rgba(201, 168, 76, 0.7)',
+                                    'rgba(232, 201, 110, 0.7)',
+                                    'rgba(180, 150, 60, 0.7)',
+                                    'rgba(140, 110, 30, 0.7)',
+                                    'rgba(100, 80, 20, 0.7)'
+                                ],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: { color: '#f5f0e8' }
+                                }
+                            }
+                        }
+                    });
+                });
+        });
+    </script>
+</body>
+</html>

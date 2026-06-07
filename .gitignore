@@ -1,0 +1,12 @@
+# Ignore uploaded images and assets
+images/
+project.image/
+
+# Ignore IDE configuration directories
+.vscode/
+.idea/
+*.class
+
+# Ignore Maven build directories
+target/
+demo/target/

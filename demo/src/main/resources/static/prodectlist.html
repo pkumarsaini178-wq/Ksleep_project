@@ -228,6 +228,15 @@ color:#666;
 </footer>
 
 <script>
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 fetch("http://localhost:1234/fechdata")
 .then(res => res.json())
@@ -241,12 +250,12 @@ data.forEach(product => {
 html += `
 <div class="product-card">
 
-<h3>${product.productName}</h3>
+<h3>${escapeHTML(product.productName)}</h3>
 
-<p class="price">₹${product.price}</p>
+<p class="price">₹${escapeHTML(product.price)}</p>
 
-<p>Material: ${product.material}</p>
-<p>Comfort: ${product.comfortLevel}</p>
+<p>Material: ${escapeHTML(product.material)}</p>
+<p>Comfort: ${escapeHTML(product.comfortLevel)}</p>
 
 <div class="image-container">
 <img src="${product.image1 || ''}">
@@ -255,7 +264,7 @@ html += `
 <img src="${product.image4 || ''}">
 </div>
 
-<p class="desc">${product.productDescription || ''}</p>
+<p class="desc">${escapeHTML(product.productDescription || '')}</p>
 
 <button class="btn" onclick="view(${product.id})">View Details</button>
 

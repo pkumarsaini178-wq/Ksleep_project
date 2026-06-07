@@ -153,9 +153,9 @@ Found cheaper elsewhere
 
 </div>
 
- <a href="index.html"><button class="cancel-btn" onclick="cancelOrder()">
+ <button class="cancel-btn" onclick="cancelOrder()">
 Confirm Cancel Order
-</button></a>
+</button>
 
 </div>
 
@@ -187,19 +187,35 @@ document.getElementById("productImage").src =
 "http://localhost:1234/images/" + image;
 
 
+function getCookie(name) {
+  let value = "; " + document.cookie;
+  let parts = value.split("; " + name + "=");
+  if (parts.length === 2) return parts.pop().split(";").shift();
+}
+
 /* CANCEL ORDER FUNCTION */
 function cancelOrder(){
 
-let reason = document.querySelector('input[name="reason"]:checked').value;
+let selectedReasonEl = document.querySelector('input[name="reason"]:checked');
+if(!selectedReasonEl) {
+  alert("Please select a reason for cancellation");
+  return;
+}
+let reason = selectedReasonEl.value;
 let comment = document.getElementById("comment").value;
 
+const csrfToken = getCookie("XSRF-TOKEN");
+
 fetch("http://localhost:1234/cancelOrder?id="+id+"&reason="+reason+"&comment="+comment,{
-method:"POST"
+method:"POST",
+headers: {
+  "X-XSRF-TOKEN": csrfToken || ""
+}
 })
 .then(res=>res.text())
 .then(msg=>{
 alert(msg);
-window.location.href="orderhistory.html";
+window.location.href="order.html";
 });
 
 }

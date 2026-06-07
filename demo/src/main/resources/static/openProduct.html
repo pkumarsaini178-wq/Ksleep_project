@@ -458,6 +458,16 @@ footer { position: relative; z-index: 2; background: var(--deep); padding: 80px 
 </footer>
 
 <script>
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 gsap.registerPlugin(ScrollTrigger);
 
 /* ── CURSOR ── */
@@ -595,14 +605,14 @@ function renderProducts(data){
     card.className = 'product-card';
     card.innerHTML = `
       <div class="card-img-wrap">
-        <img src="${product.image1}" loading="lazy" alt="${product.productName}"
+        <img src="${product.image1}" loading="lazy" alt="${escapeHTML(product.productName)}"
              onerror="this.src='https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600'">
         <div class="card-img-overlay"></div>
         <span class="card-badge">${cat}</span>
       </div>
       <div class="card-content">
         <span class="card-category">${cat}</span>
-        <h4>${product.productName}</h4>
+        <h4>${escapeHTML(product.productName)}</h4>
         <div class="card-divider"></div>
         <span class="price">₹${Number(product.price).toLocaleString('en-IN')} <small class="price-sub">incl. taxes</small></span>
         <button class="card-btn" onclick="checkLogin(${product.id})">
@@ -635,25 +645,8 @@ function renderProducts(data){
   addHover('.card-btn');
 }
 
-/* LOGIN CHECK — original logic, untouched */
 function checkLogin(id){
-  const loginStatus = localStorage.getItem("userLogin");
-  const loginTime   = localStorage.getItem("loginTime");
-
-  if(loginStatus === "true" && loginTime){
-    const diff       = Date.now() - Number(loginTime);
-    const fifteenDays = 15*24*60*60*1000;
-
-    if(diff < fifteenDays){
-      window.location.href = "fulldeatailprodect.html?id=" + id;
-    } else {
-      localStorage.removeItem("userLogin");
-      localStorage.removeItem("loginTime");
-      window.location.href = "login.html?id=" + id;
-    }
-  } else {
-    window.location.href = "login.html?id=" + id;
-  }
+  window.location.href = "fulldeatailprodect.html?id=" + id;
 }
 
 /* SEARCH — original logic */

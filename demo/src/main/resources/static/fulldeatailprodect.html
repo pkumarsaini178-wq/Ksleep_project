@@ -241,6 +241,16 @@ header{position:fixed;top:0;width:100%;padding:20px 6%;display:flex;justify-cont
 </div>
 
 <script>
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // ── LOADER ──
 window.addEventListener('load', () => {
   setTimeout(() => document.getElementById('loader').classList.add('done'), 1800);
@@ -290,7 +300,8 @@ function loadProduct(product) {
   productName   = product.productName;
 
   // Populate UI
-  document.getElementById('prodName').innerHTML = product.productName.replace(/(\S+)\s*$/, '<em>$1</em>');
+  const escapedName = escapeHTML(product.productName);
+  document.getElementById('prodName').innerHTML = escapedName.replace(/(\S+)\s*$/, '<em>$1</em>');
   document.getElementById('prodPrice').textContent = '₹' + product.price;
   document.getElementById('prodDesc').textContent  = product.productDescription || 'Premium quality sleep product crafted with the finest materials.';
   document.getElementById('prodTag').textContent   = '— ' + (product.tag || 'Luxury Collection') + ' —';
@@ -316,7 +327,15 @@ function loadProduct(product) {
 if(urlId) {
   fetch(`http://localhost:1234/fechdata/${urlId}`)
     .then(r => r.json())
-    .then(loadProduct)
+    .then(product => {
+      localStorage.setItem("userLogin", "true");
+      localStorage.setItem("loginTime", Date.now().toString());
+      const urlEmail = params.get('email');
+      if (urlEmail) {
+          localStorage.setItem("userEmail", urlEmail);
+      }
+      loadProduct(product);
+    })
     .catch(() => loadProduct(demo));
 } else {
   loadProduct(demo);
@@ -380,12 +399,15 @@ function revealAll(){
 function goToPayment(){
   if(!productId){ showToast('Product not loaded yet'); return; }
 
+  const email = localStorage.getItem("userEmail") || "";
+
   const url = 'paymentgatvey.html'
     + '?id='    + encodeURIComponent(productId)
     + '&price=' + encodeURIComponent(productPrice)
     + '&name='  + encodeURIComponent(productName)
     + '&image=' + encodeURIComponent(selectedImage)
-    + '&qty='   + encodeURIComponent(qty);
+    + '&qty='   + encodeURIComponent(qty)
+    + '&email=' + encodeURIComponent(email);
 
   window.location.href = url;
 }

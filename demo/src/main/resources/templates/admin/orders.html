@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Purchase Details — KSleep</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #07070f;
+            --deep: #0e0e1a;
+            --surface: #13131f;
+            --card: #1a1a2a;
+            --gold: #c9a84c;
+            --gold2: #e8c96e;
+            --cream: #f5f0e8;
+            --muted: #8a8070;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(201, 168, 76, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        body {
+            background: var(--ink);
+            color: var(--cream);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: var(--deep);
+            border-right: 1px solid var(--glass-border);
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            color: var(--gold);
+            letter-spacing: 4px;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .menu-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: var(--cream);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background: var(--glass);
+            border-color: var(--glass-border);
+            color: var(--gold);
+            transform: translateX(4px);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 50px 60px;
+            background: radial-gradient(circle at top right, rgba(201, 168, 76, 0.03), transparent);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 40px;
+            font-weight: 500;
+        }
+
+        .title em {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        /* TABLE CARD */
+        .table-card {
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 16px 20px;
+            font-size: 14px;
+        }
+
+        th {
+            background: var(--deep);
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 11px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        .order-img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .status-confirmed { background: rgba(201, 168, 76, 0.15); color: var(--gold2); }
+        .status-shipped { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .status-delivered { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .status-cancelled { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+        select {
+            padding: 6px 12px;
+            background: var(--ink);
+            border: 1px solid var(--glass-border);
+            color: var(--cream);
+            border-radius: 4px;
+            outline: none;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select:focus {
+            border-color: var(--gold);
+        }
+
+        .update-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-update {
+            background: var(--gold);
+            color: var(--ink);
+            border: none;
+            padding: 6px 12px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-update:hover {
+            background: var(--gold2);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-logo">KSLEEP</div>
+        <ul class="menu-list">
+            <li><a href="/admin/dashboard" class="menu-link">◈ Dashboard</a></li>
+            <li><a href="/admin/products" class="menu-link">◈ Products</a></li>
+            <li><a href="/admin/orders" class="menu-link active">◈ Customer Purchases</a></li>
+            <li><a href="/admin/customers" class="menu-link">◈ Customer Profiles</a></li>
+            <li><a href="/admin/analytics" class="menu-link">◈ Sales Analytics</a></li>
+            <li><a href="/admin/reports" class="menu-link">◈ Reports & Stats</a></li>
+            <li><a href="/login.html" class="menu-link logout-btn" onclick="document.cookie='jwt=; Max-Age=0; path=/;';">Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="title">Customer <em>Purchases</em></h1>
+        </div>
+
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Product</th>
+                        <th>Customer Info</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                        <th>Order Date</th>
+                        <th>Status / Update</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="order : ${orders}">
+                        <td th:text="'#' + ${order.id}">#1</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img th:src="${order.image != null ? (order.image.startsWith('http') ? order.image : 'http://localhost:1234/images/' + order.image) : '/images/default.jpg'}" class="order-img">
+                                <span th:text="${order.productName}">Product Name</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 500;" th:text="${order.customerName}">Customer Name</div>
+                            <div style="font-size: 12px; color: var(--muted);" th:text="${order.email}">customer@mail.com</div>
+                            <div style="font-size: 12px; color: var(--muted);" th:text="${order.mobile_No}">7690932287</div>
+                        </td>
+                        <td th:text="${order.quantity}">1</td>
+                        <td th:text="'₹' + ${#numbers.formatDecimal(order.price, 1, 'COMMA', 2, 'POINT')}">₹0.00</td>
+                        <td th:text="'₹' + ${#numbers.formatDecimal(order.price * order.quantity, 1, 'COMMA', 2, 'POINT')}">₹0.00</td>
+                        <td th:text="${#temporals.format(order.orderDate, 'dd MMM yyyy, HH:mm')}">Date</td>
+                        <td>
+                            <div>
+                                <span th:class="'status-badge status-' + ${#strings.toLowerCase(order.status)}" 
+                                      th:text="${order.status}">Confirmed</span>
+                            </div>
+                            <form th:action="@{/admin/orders/update-status}" method="POST" class="update-form">
+                                <input type="hidden" name="id" th:value="${order.id}">
+                                <select name="status">
+                                    <option value="confirmed" th:selected="${order.status == 'confirmed'}">Confirmed</option>
+                                    <option value="shipped" th:selected="${order.status == 'shipped'}">Shipped</option>
+                                    <option value="delivered" th:selected="${order.status == 'delivered'}">Delivered</option>
+                                    <option value="cancelled" th:selected="${order.status == 'cancelled'}">Cancelled</option>
+                                </select>
+                                <button type="submit" class="btn-update">Save</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

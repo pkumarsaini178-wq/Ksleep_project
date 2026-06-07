@@ -165,7 +165,7 @@ nav a.active{color:var(--gold);}
   <nav>
     <a href="index.html">Home</a>
     <a href="openProduct.html">Products</a>
-    <a href="myorder.html" class="active">My Orders</a>
+    <a href="order.html" class="active">My Orders</a>
   </nav>
 </header>
 
@@ -205,6 +205,22 @@ nav a.active{color:var(--gold);}
 </div>
 
 <script>
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function getCookie(name) {
+  let value = "; " + document.cookie;
+  let parts = value.split("; " + name + "=");
+  if (parts.length === 2) return parts.pop().split(";").shift();
+}
+
 window.addEventListener('load',()=>{setTimeout(()=>document.getElementById('loader').classList.add('done'),1800);});
 
 const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
@@ -372,17 +388,17 @@ function renderOrders(orders){
 
       <div class="card-body">
         <div class="order-img-wrap">
-          <img src="${imgSrc}" alt="${order.productName||''}"
+          <img src="${imgSrc}" alt="${escapeHTML(order.productName)}"
             onerror="this.src='https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=300'">
         </div>
 
         <div class="order-info">
           <p class="order-tag">KSleep Premium</p>
-          <h3 class="order-name">${order.productName||'—'}</h3>
+          <h3 class="order-name">${escapeHTML(order.productName||'—')}</h3>
           <div class="order-meta">
-            <strong>Customer:</strong> ${order.customerName||'—'}<br>
-            <strong>Address:</strong> ${order.address||'—'}<br>
-            <strong>Mobile:</strong> ${order.mobile_No||'—'}
+            <strong>Customer:</strong> ${escapeHTML(order.customerName||'—')}<br>
+            <strong>Address:</strong> ${escapeHTML(order.address||'—')}<br>
+            <strong>Mobile:</strong> ${escapeHTML(order.mobile_No||'—')}
           </div>
           <div class="stars-row" id="stars-${order.id}">
             ${starsHtml}
@@ -459,7 +475,14 @@ function rate(orderId,rating,el){
   const wrap=document.getElementById('stars-'+orderId);
   if(!wrap)return;
   wrap.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('lit',i<rating));
-  fetch(`http://localhost:1234/saveRating?orderId=${orderId}&rating=${rating}`,{method:'POST',credentials:'include'})
+  const csrfToken = getCookie("XSRF-TOKEN");
+  fetch(`http://localhost:1234/saveRating?orderId=${orderId}&rating=${rating}`,{
+    method:'POST',
+    credentials:'include',
+    headers: {
+      "X-XSRF-TOKEN": csrfToken || ""
+    }
+  })
     .then(()=>showToast('Rating saved ✦ '+rating+' star'+(rating>1?'s':'')))
     .catch(()=>showToast('Rating saved ✦'));
   const o=allOrders.find(o=>o.id===orderId);

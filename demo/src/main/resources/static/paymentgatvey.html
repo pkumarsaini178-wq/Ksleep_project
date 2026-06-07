@@ -283,7 +283,7 @@ header {
         </div>
       </div>
 
-      <a href="index.html"><button type="submit" class="btn-submit">Confirm & Place Order &nbsp;✦</button></a>
+      <button type="submit" class="btn-submit">Confirm & Place Order &nbsp;✦</button>
 
     </form>
   </div>
@@ -419,6 +419,20 @@ window.onload = function() {
     document.getElementById('qrNote').textContent        = `Pay ₹${total} for your KSleep order`;
   }
 
+  // ✅ Auto-fill email and fetch/fill username
+  const email = params.get('email') || '';
+  if (email) {
+    document.querySelector('input[name="email"]').value = email;
+    fetch(`http://localhost:1234/getUserName?email=${encodeURIComponent(email)}`)
+      .then(res => res.text())
+      .then(fetchedName => {
+        if (fetchedName) {
+          document.querySelector('input[name="username"]').value = fetchedName;
+        }
+      })
+      .catch(err => console.error(err));
+  }
+
   // Reveal animations
   setTimeout(() => {
     document.querySelectorAll('.reveal').forEach((el, i) => {
@@ -426,6 +440,13 @@ window.onload = function() {
     });
   }, 400);
 };
+
+// Helper to read cookie
+function getCookie(name) {
+  let value = "; " + document.cookie;
+  let parts = value.split("; " + name + "=");
+  if (parts.length === 2) return parts.pop().split(";").shift();
+}
 
 // ── FORM VALIDATION ──
 function validateForm(){
@@ -439,6 +460,21 @@ function validateForm(){
     showToast('Please enter a valid 10-digit mobile number');
     return false;
   }
+
+  // Inject CSRF token
+  const csrfToken = getCookie("XSRF-TOKEN");
+  if (csrfToken) {
+    let form = document.querySelector('form.form-grid');
+    let csrfInput = form.querySelector('input[name="_csrf"]');
+    if (!csrfInput) {
+      csrfInput = document.createElement("input");
+      csrfInput.type = "hidden";
+      csrfInput.name = "_csrf";
+      form.appendChild(csrfInput);
+    }
+    csrfInput.value = csrfToken;
+  }
+
   return true;
 }
 

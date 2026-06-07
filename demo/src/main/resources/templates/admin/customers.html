@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Profiles — KSleep</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #07070f;
+            --deep: #0e0e1a;
+            --surface: #13131f;
+            --card: #1a1a2a;
+            --gold: #c9a84c;
+            --gold2: #e8c96e;
+            --cream: #f5f0e8;
+            --muted: #8a8070;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(201, 168, 76, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        body {
+            background: var(--ink);
+            color: var(--cream);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: var(--deep);
+            border-right: 1px solid var(--glass-border);
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            color: var(--gold);
+            letter-spacing: 4px;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .menu-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: var(--cream);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background: var(--glass);
+            border-color: var(--glass-border);
+            color: var(--gold);
+            transform: translateX(4px);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 50px 60px;
+            background: radial-gradient(circle at top right, rgba(201, 168, 76, 0.03), transparent);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 40px;
+            font-weight: 500;
+        }
+
+        .title em {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        /* TABLE */
+        .table-card {
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 16px 20px;
+            font-size: 14px;
+        }
+
+        th {
+            background: var(--deep);
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 11px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-logo">KSLEEP</div>
+        <ul class="menu-list">
+            <li><a href="/admin/dashboard" class="menu-link">◈ Dashboard</a></li>
+            <li><a href="/admin/products" class="menu-link">◈ Products</a></li>
+            <li><a href="/admin/orders" class="menu-link">◈ Customer Purchases</a></li>
+            <li><a href="/admin/customers" class="menu-link active">◈ Customer Profiles</a></li>
+            <li><a href="/admin/analytics" class="menu-link">◈ Sales Analytics</a></li>
+            <li><a href="/admin/reports" class="menu-link">◈ Reports & Stats</a></li>
+            <li><a href="/login.html" class="menu-link logout-btn" onclick="document.cookie='jwt=; Max-Age=0; path=/;';">Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="title">Customer <em>Profiles</em></h1>
+        </div>
+
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Account ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Mobile Number</th>
+                        <th>Shipping Address</th>
+                        <th>Pincode</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="cust : ${customers}">
+                        <td th:text="'#' + ${cust.id}">#1</td>
+                        <td th:text="${cust.name}">Customer Name</td>
+                        <td th:text="${cust.email}">customer@mail.com</td>
+                        <!-- Display profile fields if matched via profile mapping in loop -->
+                        <td th:with="profile=${profileMap.get(cust.email != null ? cust.email.toLowerCase() : '')}">
+                            <span th:if="${profile != null}" th:text="${profile.mobile_number}">-</span>
+                            <span th:if="${profile == null}">-</span>
+                        </td>
+                        <td th:with="profile=${profileMap.get(cust.email != null ? cust.email.toLowerCase() : '')}">
+                            <span th:if="${profile != null}" th:text="${profile.address}">-</span>
+                            <span th:if="${profile == null}">-</span>
+                        </td>
+                        <td th:with="profile=${profileMap.get(cust.email != null ? cust.email.toLowerCase() : '')}">
+                            <span th:if="${profile != null}" th:text="${profile.pincode}">-</span>
+                            <span th:if="${profile == null}">-</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

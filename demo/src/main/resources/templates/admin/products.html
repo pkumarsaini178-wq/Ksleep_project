@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Management — KSleep</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #07070f;
+            --deep: #0e0e1a;
+            --surface: #13131f;
+            --card: #1a1a2a;
+            --gold: #c9a84c;
+            --gold2: #e8c96e;
+            --cream: #f5f0e8;
+            --muted: #8a8070;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(201, 168, 76, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        body {
+            background: var(--ink);
+            color: var(--cream);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: var(--deep);
+            border-right: 1px solid var(--glass-border);
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            color: var(--gold);
+            letter-spacing: 4px;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .menu-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: var(--cream);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background: var(--glass);
+            border-color: var(--glass-border);
+            color: var(--gold);
+            transform: translateX(4px);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 50px 60px;
+            background: radial-gradient(circle at top right, rgba(201, 168, 76, 0.03), transparent);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 40px;
+            font-weight: 500;
+        }
+
+        .title em {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        .btn-add {
+            background: var(--gold);
+            color: var(--ink);
+            border: none;
+            padding: 12px 24px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .btn-add:hover {
+            background: var(--gold2);
+            transform: translateY(-2px);
+        }
+
+        /* TABLE */
+        .table-card {
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 16px 20px;
+            font-size: 14px;
+        }
+
+        th {
+            background: var(--deep);
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 11px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .prod-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-edit, .btn-delete {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--cream);
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .btn-edit:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .btn-delete {
+            border-color: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            padding: 40px;
+            position: relative;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: var(--cream);
+        }
+
+        .modal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            color: var(--gold);
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            color: var(--cream);
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--gold);
+            background: rgba(201, 168, 76, 0.05);
+        }
+
+        .form-submit {
+            background: var(--gold);
+            color: var(--ink);
+            border: none;
+            padding: 14px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .form-submit:hover {
+            background: var(--gold2);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-logo">KSLEEP</div>
+        <ul class="menu-list">
+            <li><a href="/admin/dashboard" class="menu-link">◈ Dashboard</a></li>
+            <li><a href="/admin/products" class="menu-link active">◈ Products</a></li>
+            <li><a href="/admin/orders" class="menu-link">◈ Customer Purchases</a></li>
+            <li><a href="/admin/customers" class="menu-link">◈ Customer Profiles</a></li>
+            <li><a href="/admin/analytics" class="menu-link">◈ Sales Analytics</a></li>
+            <li><a href="/admin/reports" class="menu-link">◈ Reports & Stats</a></li>
+            <li><a href="/login.html" class="menu-link logout-btn" onclick="document.cookie='jwt=; Max-Age=0; path=/;';">Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="title">Product <em>Management</em></h1>
+            <button class="btn-add" onclick="openAddModal()">Add Product &nbsp;✦</button>
+        </div>
+
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Product Name</th>
+                        <th>Price</th>
+                        <th>Material</th>
+                        <th>Comfort</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="prod : ${products}">
+                        <td>
+                            <img th:src="${prod.image1 != null ? 'http://localhost:1234/images/' + prod.image1 : '/images/default.jpg'}" class="prod-img">
+                        </td>
+                        <td th:text="${prod.productName}">Product Name</td>
+                        <td th:text="'₹' + ${#numbers.formatDecimal(prod.price, 1, 'COMMA', 2, 'POINT')}">₹0.00</td>
+                        <td th:text="${prod.material}">Material</td>
+                        <td th:text="${prod.comfortLevel}">High Comfort</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn-edit" 
+                                        th:data-id="${prod.id}"
+                                        th:data-name="${prod.productName}"
+                                        th:data-price="${prod.price}"
+                                        th:data-material="${prod.material}"
+                                        th:data-comfort="${prod.comfortLevel}"
+                                        th:data-desc="${prod.productDescription}"
+                                        onclick="openEditModal(this)">Edit</button>
+                                <form th:action="'/admin/products/delete/' + ${prod.id}" method="POST" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                    <button type="submit" class="btn-delete">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ADD PRODUCT MODAL -->
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('addModal')">&times;</span>
+            <h2 class="modal-title">Add New Product</h2>
+            <form th:action="@{/insertproductdata}" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label class="form-label">Product Name</label>
+                    <input type="text" name="productName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Price (₹)</label>
+                    <input type="number" step="0.01" name="price" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Material Used</label>
+                    <input type="text" name="material" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Comfort Level</label>
+                    <select name="comfort">
+                        <option>High Comfort</option>
+                        <option>Medium Comfort</option>
+                        <option>Basic Comfort</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Product Description</label>
+                    <textarea name="description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Upload Product Images (Choose 5)</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <input type="file" name="image1" accept="image/*" required>
+                        <input type="file" name="image2" accept="image/*" required>
+                        <input type="file" name="image3" accept="image/*" required>
+                        <input type="file" name="image4" accept="image/*" required>
+                        <input type="file" name="image5" accept="image/*" required>
+                    </div>
+                </div>
+                <button type="submit" class="form-submit">Insert Product</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT PRODUCT MODAL -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('editModal')">&times;</span>
+            <h2 class="modal-title">Edit Product</h2>
+            <form th:action="@{/admin/products/update}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="id" id="edit-id">
+                <div class="form-group">
+                    <label class="form-label">Product Name</label>
+                    <input type="text" name="productName" id="edit-name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Price (₹)</label>
+                    <input type="number" step="0.01" name="price" id="edit-price" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Material Used</label>
+                    <input type="text" name="material" id="edit-material" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Comfort Level</label>
+                    <select name="comfort" id="edit-comfort">
+                        <option>High Comfort</option>
+                        <option>Medium Comfort</option>
+                        <option>Basic Comfort</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Product Description</label>
+                    <textarea name="description" id="edit-desc" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Update Images (Optional)</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <input type="file" name="image1" accept="image/*">
+                        <input type="file" name="image2" accept="image/*">
+                        <input type="file" name="image3" accept="image/*">
+                        <input type="file" name="image4" accept="image/*">
+                        <input type="file" name="image5" accept="image/*">
+                    </div>
+                </div>
+                <button type="submit" class="form-submit">Update Product</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openAddModal() {
+            document.getElementById('addModal').style.display = 'flex';
+        }
+
+        function openEditModal(button) {
+            document.getElementById('edit-id').value = button.getAttribute('data-id');
+            document.getElementById('edit-name').value = button.getAttribute('data-name');
+            document.getElementById('edit-price').value = button.getAttribute('data-price');
+            document.getElementById('edit-material').value = button.getAttribute('data-material');
+            document.getElementById('edit-comfort').value = button.getAttribute('data-comfort');
+            document.getElementById('edit-desc').value = button.getAttribute('data-desc');
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

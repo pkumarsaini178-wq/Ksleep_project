@@ -96,7 +96,7 @@ body{
 }
 .form-group:focus-within .input-icon{color:var(--gold);}
 
-input[type=text],input[type=email],input[type=tel]{
+input[type=text],input[type=email],input[type=tel],input[type=password]{
   width:100%;padding:14px 16px 14px 44px;
   background:rgba(255,255,255,0.03);
   border:1px solid rgba(201,168,76,0.15);
@@ -182,7 +182,7 @@ input:focus{
 
 <div class="particles" id="particles"></div>
 
-<div id="toast" id="toast">✦ &nbsp;<span id="toastMsg">Admin created successfully</span></div>
+<div id="toast">✦ &nbsp;<span id="toastMsg">Admin created successfully</span></div>
 
 <div class="card" id="card"
   onmousemove="tiltCard(event,this)"
@@ -191,11 +191,11 @@ input:focus{
   <div class="card-header">
     <div class="admin-icon">⬡</div>
     <p class="card-eyebrow">— Secure Access —</p>
-    <h1 class="card-title">Admin <em>Registration</em></h1>
+    <h1 class="card-title">Admin <em>Login</em></h1>
     <div class="card-divider"></div>
   </div>
 
-  <form action="/saveAdmin" method="get" onsubmit="handleSubmit(event)">
+  <form action="/adminLogin" method="post" onsubmit="handleSubmit(event)">
 
     <div class="form-group">
       <label class="form-label">Username</label>
@@ -207,26 +207,35 @@ input:focus{
     </div>
 
     <div class="form-group">
-      <label class="form-label">Email Address</label>
+      <label class="form-label">Password</label>
       <div class="input-wrap">
         <span class="input-icon">◎</span>
-        <input type="email" name="email" placeholder="Enter your email" required>
+        <input type="password" name="password" placeholder="Enter your password" required>
         <div class="focus-line"></div>
       </div>
     </div>
 
     <div class="form-group">
-      <label class="form-label">Mobile Number</label>
+      <label class="form-label">Email Address</label>
+      <div class="input-wrap" style="display: flex; gap: 10px; position: relative;">
+        <span class="input-icon" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%);">◉</span>
+        <input type="email" name="email" id="adminEmail" placeholder="Enter email address" required style="flex: 1; padding: 14px 16px 14px 44px;">
+        <button type="button" id="sendOtpBtn" onclick="sendOTP()" style="width: auto; background: var(--gold); color: var(--ink); border: none; padding: 14px 20px; font-size: 11px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s; clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);">Send OTP</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">OTP Verification</label>
       <div class="input-wrap">
-        <span class="input-icon">◉</span>
-        <input type="tel" name="mo" placeholder="Enter mobile number" required>
+        <span class="input-icon">⬢</span>
+        <input type="text" name="otp" id="otpField" placeholder="Enter 6-digit OTP" maxlength="6" required>
         <div class="focus-line"></div>
       </div>
     </div>
 
     <div class="btn-wrap">
       <button type="submit" class="btn-submit" id="submitBtn">
-        Create Admin Account &nbsp;✦
+        Login &nbsp;✦
       </button>
     </div>
 
@@ -267,19 +276,70 @@ function resetCard(el){
   el.style.transform='perspective(1000px) rotateX(0) rotateY(0)';
 }
 
+// SEND OTP
+function sendOTP() {
+  const email = document.getElementById('adminEmail').value;
+  if (!email) {
+    showToast('Please enter your email first!');
+    return;
+  }
+  if (email !== 'pkumarsaini178@gmail.com') {
+    showToast('Unauthorized email address!');
+    return;
+  }
+
+  const btn = document.getElementById('sendOtpBtn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  fetch('/admin/sendOtp?email=' + encodeURIComponent(email), {
+    method: 'POST'
+  })
+  .then(res => {
+    if (res.ok) {
+      showToast('OTP sent successfully!');
+      btn.textContent = 'Sent';
+      let count = 60;
+      const interval = setInterval(() => {
+        count--;
+        if (count <= 0) {
+          clearInterval(interval);
+          btn.textContent = 'Send OTP';
+          btn.disabled = false;
+        } else {
+          btn.textContent = `Resend (${count}s)`;
+        }
+      }, 1000);
+    } else {
+      res.text().then(text => {
+        showToast(text || 'Failed to send OTP');
+        btn.textContent = 'Send OTP';
+        btn.disabled = false;
+      });
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    showToast('Network error while sending OTP');
+    btn.textContent = 'Send OTP';
+    btn.disabled = false;
+  });
+}
+
 // SUBMIT
 function handleSubmit(e){
   const btn=document.getElementById('submitBtn');
-  btn.textContent='✦  Creating Account...';
+  btn.textContent='✦  Authenticating...';
   btn.style.opacity='0.7';
   btn.disabled=true;
-  setTimeout(()=>{
-    btn.classList.add('success');
-    btn.textContent='✔  Admin Created Successfully';
-    showToast('Admin account created! ✦');
-    setTimeout(()=>e.target.submit(),1200);
-  },1000);
+  setTimeout(()=>e.target.submit(), 500);
   e.preventDefault();
+}
+
+// CHECK URL ERROR
+const params = new URLSearchParams(window.location.search);
+if (params.get("error") === "invalid") {
+  showToast("Invalid Admin credentials!");
 }
 
 // TOAST

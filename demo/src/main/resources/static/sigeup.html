@@ -103,6 +103,7 @@ text-decoration:underline;
 <h2>Create Account</h2>
 
 <form action="/signup" method="POST">
+<input type="hidden" name="id" id="productId">
 
 <label>Username</label>
 <input type="text" name="username" placeholder="Enter Username" required>
@@ -122,5 +123,16 @@ text-decoration:underline;
 
 </div>
 
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+if (id) {
+    document.getElementById("productId").value = id;
+    const loginLink = document.querySelector('a[href="login.html"]');
+    if (loginLink) {
+        loginLink.href = "login.html?id=" + id;
+    }
+}
+</script>
 </body>
 </html>

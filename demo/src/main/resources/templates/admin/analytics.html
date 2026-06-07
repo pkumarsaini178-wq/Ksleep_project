@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Business Analytics — KSleep</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --ink: #07070f;
+            --deep: #0e0e1a;
+            --surface: #13131f;
+            --card: #1a1a2a;
+            --gold: #c9a84c;
+            --gold2: #e8c96e;
+            --cream: #f5f0e8;
+            --muted: #8a8070;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(201, 168, 76, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        body {
+            background: var(--ink);
+            color: var(--cream);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: var(--deep);
+            border-right: 1px solid var(--glass-border);
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            color: var(--gold);
+            letter-spacing: 4px;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .menu-list {
+            list-style: list-style-type;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: var(--cream);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background: var(--glass);
+            border-color: var(--glass-border);
+            color: var(--gold);
+            transform: translateX(4px);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 50px 60px;
+            background: radial-gradient(circle at top right, rgba(201, 168, 76, 0.03), transparent);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 40px;
+            font-weight: 500;
+        }
+
+        .title em {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        /* GRID SECTION */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .chart-card {
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        .chart-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            color: var(--cream);
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 12px;
+        }
+
+        /* LIST CARD */
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .list-card {
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+
+        th {
+            background: var(--deep);
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 11px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-logo">KSLEEP</div>
+        <ul class="menu-list">
+            <li><a href="/admin/dashboard" class="menu-link">◈ Dashboard</a></li>
+            <li><a href="/admin/products" class="menu-link">◈ Products</a></li>
+            <li><a href="/admin/orders" class="menu-link">◈ Customer Purchases</a></li>
+            <li><a href="/admin/customers" class="menu-link">◈ Customer Profiles</a></li>
+            <li><a href="/admin/analytics" class="menu-link active">◈ Sales Analytics</a></li>
+            <li><a href="/admin/reports" class="menu-link">◈ Reports & Stats</a></li>
+            <li><a href="/login.html" class="menu-link logout-btn" onclick="document.cookie='jwt=; Max-Age=0; path=/;';">Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="title">Business <em>Analytics</em></h1>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="analytics-grid">
+            <div class="chart-card">
+                <h2 class="chart-title">Revenue Trends (Monthly Sales Reports)</h2>
+                <div style="height: 350px;"><canvas id="revenueTrendChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h2 class="chart-title">Product Popularity Distribution</h2>
+                <div style="height: 350px;"><canvas id="productPieChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- LISTS -->
+        <div class="tables-grid">
+            <div class="list-card">
+                <h2 class="chart-title">Most Purchased Products</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Total Units Purchased</th>
+                        </tr>
+                    </thead>
+                    <tbody id="most-purchased-list">
+                        <!-- JS Loaded -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="list-card">
+                <h2 class="chart-title">Least Purchased Products</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Total Units Purchased</th>
+                        </tr>
+                    </thead>
+                    <tbody id="least-purchased-list">
+                        <!-- JS Loaded -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT FOR LOADING DATA -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fetch monthly sales trends
+            fetch('/admin/api/analytics/monthly-sales')
+                .then(res => res.json())
+                .then(data => {
+                    const months = data.map(item => item.month);
+                    const revenues = data.map(item => item.revenue);
+
+                    new Chart(document.getElementById('revenueTrendChart'), {
+                        type: 'line',
+                        data: {
+                            labels: months.length > 0 ? months : ['No Data'],
+                            datasets: [{
+                                label: 'Monthly Sales Revenue (₹)',
+                                data: revenues.length > 0 ? revenues : [0],
+                                fill: true,
+                                backgroundColor: 'rgba(201, 168, 76, 0.1)',
+                                borderColor: '#c9a84c',
+                                tension: 0.3,
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                    ticks: { color: '#f5f0e8' }
+                                },
+                                x: {
+                                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                    ticks: { color: '#f5f0e8' }
+                                }
+                            },
+                            plugins: {
+                                legend: { labels: { color: '#f5f0e8' } }
+                            }
+                        }
+                    });
+                });
+
+            // Fetch summary stats
+            fetch('/admin/api/analytics/summary')
+                .then(res => res.json())
+                .then(data => {
+                    const topProducts = data.mostPurchasedProducts;
+                    const labels = topProducts.map(p => p.productName);
+                    const quantities = topProducts.map(p => p.quantity);
+
+                    // Render Pie Chart
+                    new Chart(document.getElementById('productPieChart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels.length > 0 ? labels : ['No Data'],
+                            datasets: [{
+                                data: quantities.length > 0 ? quantities : [1],
+                                backgroundColor: [
+                                    '#c9a84c',
+                                    '#e8c96e',
+                                    '#b5933c',
+                                    '#8f7023',
+                                    '#664d12'
+                                ],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: { color: '#f5f0e8' }
+                                }
+                            }
+                        }
+                    });
+
+                    // Render tables
+                    const mostList = document.getElementById('most-purchased-list');
+                    let mostHtml = '';
+                    if (data.mostPurchasedProducts.length > 0) {
+                        data.mostPurchasedProducts.forEach(item => {
+                            mostHtml += `<tr><td>${item.productName}</td><td>${item.quantity}</td></tr>`;
+                        });
+                    } else {
+                        mostHtml = '<tr><td colspan="2">No purchase records found.</td></tr>';
+                    }
+                    mostList.innerHTML = mostHtml;
+
+                    const leastList = document.getElementById('least-purchased-list');
+                    let leastHtml = '';
+                    if (data.leastPurchasedProducts.length > 0) {
+                        data.leastPurchasedProducts.forEach(item => {
+                            leastHtml += `<tr><td>${item.productName}</td><td>${item.quantity}</td></tr>`;
+                        });
+                    } else {
+                        leastHtml = '<tr><td colspan="2">No purchase records found.</td></tr>';
+                    }
+                    leastList.innerHTML = leastHtml;
+                });
+        });
+    </script>
+</body>
+</html>

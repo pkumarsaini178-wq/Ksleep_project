@@ -17,7 +17,6 @@ public class EntityFile {
  private int id;
  private String name;
  private Long mobile_no;
- private String email;
-    
-
+ private String  email;
+ 
 }
